@@ -1,0 +1,26 @@
+[
+  {
+    "domain": "riyadh-cafe.com",
+    "name": "Riyadh Cafe",
+    "city": "Riyadh",
+    "country": "KSA",
+    "email": "info@riyadh-cafe.com",
+    "website": "https://riyadh-cafe.com"
+  },
+  {
+    "domain": "jeddah-salon.com",
+    "name": "Jeddah Salon",
+    "city": "Jeddah",
+    "country": "KSA",
+    "email": "info@jeddah-salon.com",
+    "website": "https://jeddah-salon.com"
+  },
+  {
+    "domain": "houston-plumber.com",
+    "name": "Houston Plumber",
+    "city": "Houston",
+    "country": "USA",
+    "email": "info@houston-plumber.com",
+    "website": "https://houston-plumber.com"
+  }
+]

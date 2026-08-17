@@ -1,7 +1,7 @@
 {
   "crons": [{
-    "path": "/api/run-agents?count=10",
-    "schedule": "0 * * * *"
+    "path": "/api/run-agents?batch=0",
+    "schedule": "0 */1 * * *"
   }]
 }
 

@@ -1,74 +1,51 @@
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs'; export const dynamic = 'force-dynamic';
 import nodemailer from "nodemailer";
 
-// SYLVIA: Auto find BBQ websites from DuckDuckGo (no API key needed)
-async function scrapeLeadsSelf(): Promise<string[]> {
-  try{
-    const query = "BBQ restaurant Texas contact";
-    const r = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
-      headers: { "User-Agent": "Mozilla/5.0" }, signal: AbortSignal.timeout(10000)
-    });
-    const html = r.ok? await r.text() : "";
-    const urlRegex = /https?:\/\/(?:www\.)?([a-z0-9-]+\.(?:com|net|org|co|io)[^"'\s<>]*)/gi;
-    const matches = [...html.matchAll(urlRegex)].map(m=>m[0].split('"')[0].split("'")[0]);
-    const cleaned = [...new Set(matches)].filter(u=>
-     !u.includes('duckduckgo') &&!u.includes('yelp.com') &&!u.includes('facebook') &&!u.includes('instagram') && u.includes('.')
-    ).slice(0,8);
-    return cleaned.length? cleaned : ["https://truthbbq.com","https://bloodbrosbbq.com","https://www.killensbarbecue.com","https://pinkertonsbarbecue.com"];
-  }catch{ return ["https://truthbbq.com","https://bloodbrosbbq.com","https://www.killensbarbecue.com"]; }
+function isOutdated(html:string){
+  const m = html.match(/©|copyright[^0-9]*((?:19|20)\d{2})/i);
+  const y = m? parseInt(m[1]) : 0;
+  return y>0 && y<=2015;
 }
 
-async function getRealContact(website: string){
-  const pages = ["", "/contact", "/contact-us", "/about"];
-  let bigHtml="";
-  for(const p of pages){
-    try{
-      const res = await fetch(website.replace(/\/$/,'')+p, { headers:{"User-Agent":"Mozilla/5.0"}, signal:AbortSignal.timeout(7000)});
-      if(res.ok) bigHtml+=await res.text();
-    }catch{}
-  }
-  const emails = [...new Set(bigHtml.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi)||[])].filter(e=>{
-    const l=e.toLowerCase(); return!l.includes('example')&&!l.includes('wix')&&!l.includes('sentry')&&!l.includes('.png')&&!l.includes('webp');
+export async function GET(req: Request){
+  const { searchParams } = new URL(req.url);
+  const count = parseInt(searchParams.get('count')||'10');
+
+  const transporter = nodemailer.createTransport({
+    service:"gmail",
+    auth:{ user: process.env.GMAIL_USER!, pass: process.env.GMAIL_APP_PASSWORD! }
   });
-  return emails[0] || null;
-}
 
-export async function GET(){
-  const transporter = nodemailer.createTransport({ service:"gmail", auth:{ user:process.env.GMAIL_USER!, pass:process.env.GMAIL_APP_PASSWORD! }});
+  const allSites = ["http://www.bloodbrosbbq.com","http://truthbbq.com","http://www.goodecompany.com","http://www.harrysoo.com","http://www.pinkertonsbarbecue.com","http://www.theoriginalblacks.com","http://www.coopersoldtimepit.com","http://www.smittymarket.com","http://www.kreuzmarket.com","http://www.snowbbq.com","http://www.franklinbarbecue.com","http://www.laBarbecue.com"];
 
-  // 1. SCRAPE LEADS THEMSELVES
-  const autoWebsites = await scrapeLeadsSelf();
+  let sent=0, found=0; const logs:any[]=[];
 
-  let found=0, sent=0;
-  let logs:any[]=[];
-
-  // 2. FOR EACH AUTO-SCRAPED SITE -> FIND REAL EMAIL -> SEND
-  for(const site of autoWebsites){
-    const realEmail = await getRealContact(site);
-    if(!realEmail){ logs.push({ site, status:"NO email on contact page"}); continue; }
-    found++;
+  for(const site of allSites.slice(0,count)){
     try{
+      const r = await fetch(site,{headers:{"User-Agent":"Mozilla/5.0"}, signal: AbortSignal.timeout(8000)});
+      const html = await r.text();
+      if(!isOutdated(html)){ logs.push({site, status:"NOT OUTDATED - SKIP"}); continue; }
+
+      let contactHtml=html;
+      try{ const r2=await fetch(site.replace(/\/$/,'')+'/contact',{signal: AbortSignal.timeout(5000)}); if(r2.ok) contactHtml+=await r2.text(); }catch{}
+      const email = (contactHtml.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi)||[]).find(e=>!e.includes('example')&&!e.includes('wix')) || null;
+
+      if(!email){ logs.push({site, status:"OUTDATED BUT NO EMAIL"}); continue; }
+      found++;
+
       await transporter.sendMail({
         from:`"Venus Plaza" <${process.env.GMAIL_USER}>`,
-        to: realEmail,
-        subject:`Quick idea for ${site}`,
-        html:`<p>Hi team at ${site},</p><p>Saw your contact page - I build AI websites that turn visitors into bookings. Demo ready.</p><p>Venus</p>`,
+        to: email,
+        subject:`Your site ${new URL(site).hostname} - copyright ${html.match(/©.*?(\d{4})/)?.[1]||'2015'}`,
+        html:`<p>Hi, saw ${site} footer still shows ${html.match(/©.*?(\d{4})/)?.[1]||'2015'} - I build AI sites. Made a demo for you.</p>`
       });
-      sent++;
-      logs.push({ site, REAL_EMAIL: realEmail, status: "SCRAPED SELF + EMAILED" });
-    }catch(e:any){ logs.push({ site, REAL_EMAIL: realEmail, error: e.message}); }
-    await new Promise(r=>setTimeout(r,1200));
+      sent++; logs.push({site, REAL_EMAIL:email, status:"EMAILED"});
+    }catch(e:any){ logs.push({site, error:e.message}); }
   }
 
-  return Response.json({
-    mode:"AUTO SCRAPE LEADS THEMSELVES - NO HARDCODE",
-    auto_scraped_sites: autoWebsites,
-    REAL_FOUND: found,
-    REAL_SENT: sent,
-    logs,
-    time: new Date().toISOString()
-  });
+  return Response.json({ MODE:`${count} SITES PER HOUR`, REAL_OUTDATED_FOUND:found, REAL_SENT:sent, logs, time:new Date().toISOString() });
 }
-export async function POST(){ return GET(); }
+export async function POST(req: Request){ return GET(req); }
+
+
 

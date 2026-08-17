@@ -1,0 +1,11 @@
+name: Venus Live
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -X POST https://venus-agent-hq.vercel.app/api/run-agents -H "Content-Type: application/json" -d '{"secret":"venus_hq_2024"}'

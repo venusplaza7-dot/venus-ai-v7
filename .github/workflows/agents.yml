@@ -1,11 +1,56 @@
-name: Venus Live
+name: Venus Send 100 Tonight
+
 on:
+  workflow_dispatch:  # manual button
   schedule:
-    - cron: '0 * * * *'
-  workflow_dispatch:
+    - cron: '0 2 * * *'  # 7am Pakistan time
+
 jobs:
-  run:
+  send:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          curl -X POST https://venus-agent-hq.vercel.app/api/run-agents -H "Content-Type: application/json" -d '{"secret":"venus_hq_2024"}'
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Send 100 emails via Brevo
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+        run: |
+          node - <<'JS'
+          const fs = require('fs');
+          let emails = [];
+          try { 
+            const raw = fs.readFileSync('site500.json','utf8'); 
+            emails = JSON.parse(raw);
+          } catch(e) { 
+            console.log('site500.json missing/invalid, using fallback');
+            emails = [{email:'ve9us1@gmail.com'}];
+          }
+          const toSend = emails.slice(0, 100);
+          console.log(`Found ${emails.length}, sending ${toSend.length}`);
+          
+          (async () => {
+            let sent = 0;
+            for (const it of toSend) {
+              const to = typeof it === 'string' ? it : it.email;
+              if (!to) continue;
+              const r = await fetch('https://api.brevo.com/v3/smtp/email', {
+                method: 'POST',
+                headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  sender: { email: 've9us1@gmail.com', name: 'Venus' },
+                  to: [{ email: to }],
+                  subject: 'Quick note',
+                  htmlContent: '<p>Hello from Venus HQ</p>'
+                })
+              });
+              const d = await r.text();
+              console.log(to, r.status, d.slice(0,200));
+              if (r.ok) sent++;
+              await new Promise(x => setTimeout(x, 1200));
+              if (sent >= 100) break;
+            }
+            console.log('DONE sent:', sent);
+          })();
+          JS

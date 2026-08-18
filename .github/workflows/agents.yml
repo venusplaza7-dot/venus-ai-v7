@@ -1,56 +1,13 @@
 name: Venus Send 100 Tonight
-
-on:
-  workflow_dispatch:  # manual button
-  schedule:
-    - cron: '0 2 * * *'  # 7am Pakistan time
-
+on: workflow_dispatch
 jobs:
   send:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Send 100 emails via Brevo
-        env:
-          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
-        run: |
-          node - <<'JS'
-          const fs = require('fs');
-          let emails = [];
-          try { 
-            const raw = fs.readFileSync('site500.json','utf8'); 
-            emails = JSON.parse(raw);
-          } catch(e) { 
-            console.log('site500.json missing/invalid, using fallback');
-            emails = [{email:'ron@venushq7.com'}];
-          }
-          const toSend = emails.slice(0, 100);
-          console.log(`Found ${emails.length}, sending ${toSend.length}`);
-          
-          (async () => {
-            let sent = 0;
-            for (const it of toSend) {
-              const to = typeof it === 'string' ? it : it.email;
-              if (!to) continue;
-              const r = await fetch('https://api.brevo.com/v3/smtp/email', {
-                method: 'POST',
-                headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  sender: { email: 'ron@venushq7.com', name: 'Venus' },
-                  to: [{ email: to }],
-                  subject: 'Quick note',
-                  htmlContent: '<p>Hello from Venus HQ</p>'
-                })
-              });
-              const d = await r.text();
-              console.log(to, r.status, d.slice(0,200));
-              if (r.ok) sent++;
-              await new Promise(x => setTimeout(x, 1200));
-              if (sent >= 100) break;
-            }
-            console.log('DONE sent:', sent);
-          })();
-          JS
+      - run: |
+          KEY=$(echo "${{ secrets.BREVO_API_KEY }}" | tr -d ' \n\r\t')
+          echo "Key length after trim: ${#KEY}"
+          curl -X POST https://api.brevo.com/v3/smtp/email \
+          -H "api-key: $KEY" \
+          -H "Content-Type: application/json" \
+          -d '{"sender":{"email":"ron@venushq7.com","name":"Venus HQ"},"to":[{"email":"ve9us1@gmail.com"}],"subject":"Trimmed key test","htmlContent":"<p>Trimmed - should land</p>"}' -v 

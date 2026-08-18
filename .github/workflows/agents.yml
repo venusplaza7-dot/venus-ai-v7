@@ -1,63 +1,38 @@
-name: Venus 100 - WhatsApp CTA + Reply Fix
+name: Venus 100 - Luxury B&W + WhatsApp
 on: workflow_dispatch
 jobs:
   send:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
+      - name: Send 100 luxury B&W
+        run: |
           KEY=$(echo "${{ secrets.BREVO_API_KEY }}" | tr -d ' \n\r\t')
           node - <<'JS'
           const fs=require('fs');
           let raw=fs.readFileSync('site500.json','utf8');
-          let sites=[]; try{ sites=JSON.parse(raw); if(!Array.isArray(sites)) sites=[sites]; }catch{ const m=[...raw.matchAll(/\{[^}]+\}/g)].map(x=>x[0]); sites=m.map(s=>{try{return JSON.parse(s)}catch{return null}}).filter(Boolean); }
-          console.log(`Parsed ${sites.length}`);
+          let sites=[];
+          try{ sites=JSON.parse(raw); if(!Array.isArray(sites)) sites=[sites]; }
+          catch{ const m=[...raw.matchAll(/\{[^}]+\}/g)].map(x=>x[0]); sites=m.map(s=>{try{return JSON.parse(s)}catch{return null}}).filter(Boolean); }
+          console.log(`Parsed ${sites.length} sites`);
           (async()=>{
             const KEY=process.env.BREVO_KEY;
-            // === PUT YOUR WHATSAPP NUMBER HERE ===
-            const WHATSAPP = '923001234567'; // <-- change to your number 923xx
+            const WHATSAPP = '923001234567'; // CHANGE TO YOUR NUMBER
             const batch=sites.slice(0,100);
             let sent=0;
             for(const s of batch){
-              const domain = typeof s==='string'? s : (s.domain||s.website||'example.com');
+              const domain = typeof s==='string'? s : (s.domain||s.website||s.url||'example.com');
               const email = typeof s==='string'? 'info@'+s : (s.email||`info@${domain}`);
-              const name = s.name||domain;
+              const name = s.name||s.company||domain;
+              if(!email.includes('@')) continue;
               let ping='N/A'; try{ const t0=Date.now(); await fetch('https://'+domain.replace(/^https?:\/\//,''),{signal:AbortSignal.timeout(8000)}); ping=Date.now()-t0; }catch{ ping='slow'; }
               const slug=domain.replace(/[^a-z0-9]/gi,'').toLowerCase().slice(0,15);
               const newPreview=`https://venus-upgrade-${slug}.vercel.app`;
-              const waMsg=encodeURIComponent(`Hi Ron, I saw the new preview for ${domain} - ${newPreview} - Make it live for me`);
+              const waMsg=encodeURIComponent(`Hi Ron, preview for ${domain} - ${newPreview} - Make it live`);
               const waLink=`https://wa.me/${WHATSAPP}?text=${waMsg}`;
-
-              const html=`<div style="font-family:Arial;padding:20px;max-width:600px;margin:0 auto">
-              <h2 style="margin:0 0 10px">Quick preview for ${name} 🚀</h2>
-              <p>I checked <b>${domain}</b> - ping <b>${ping}ms (slow)</b> - and built you a 2026 version:</p>
-              <table width="100%" style="border-collapse:collapse;margin:15px 0">
-                <tr>
-                  <td style="border:1px solid #ddd;padding:15px;width:50%;background:#f9f9f9;border-radius:8px 0 0 8px"><b>BEFORE (Old)</b><br><br>${domain}<br><br>❌ 3.4s load<br>❌ Copyright 2015<br>❌ No booking</td>
-                  <td style="border:2px solid #00ff88;padding:15px;width:50%;background:#f0fff5;border-radius:0 8px 8px 0"><b>AFTER (New 2026)</b><br><br><a href="${newPreview}">${newPreview}</a><br><br>✅ 90+ speed<br>✅ Mobile + AR/EN<br>✅ Booking + Mada Pay</td>
-                </tr>
-              </table>
-              <div style="text-align:center;margin:25px 0">
-                <a href="${newPreview}" style="background:#000;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;display:inline-block;margin:5px;font-weight:bold">View Preview 👀</a><br>
-                <a href="${waLink}" style="background:#25D366;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;display:inline-block;margin:10px 5px 5px;font-weight:bold">💬 Make It Live on WhatsApp</a>
-              </div>
-              <p style="color:#666;font-size:13px">Click WhatsApp button -> goes directly to my WhatsApp. Or just reply to this email (ron@venushq7.com)</p>
-              <p>10 min to make live - $500 setup + $300/mo<br>Ron - Venus HQ<br>venus-agent-hq.vercel.app</p>
-              </div>`;
-
-              const r=await fetch('https://api.brevo.com/v3/smtp/email',{
-                method:'POST',
-                headers:{'api-key':KEY,'Content-Type':'application/json'},
-                body:JSON.stringify({
-                  sender:{email:'ron@venushq7.com',name:'Venus HQ'},
-                  replyTo:{email:'ron@venushq7.com',name:'Ron'}, // <-- FIXED reply to ron@
-                  to:[{email:email}],
-                  bcc:[{email:'ve9us1@gmail.com'}], // preview to your gmail
-                  subject:`Quick preview - upgraded ${name} - old vs new`,
-                  htmlContent: html
-                })
-              });
-              const t=await r.text(); console.log(`${email} -> ${r.status}`); if(r.ok) sent++; await new Promise(x=>setTimeout(x,1500));
+              const html=`<div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;padding:40px 20px;max-width:600px;margin:0 auto;background:#ffffff;color:#000000"><div style="border-top:1px solid #000;padding-top:20px;margin-bottom:30px"><p style="letter-spacing:4px;font-size:10px;margin:0;color:#666">VENUS HQ</p><h1 style="font-weight:300;font-size:28px;margin:10px 0 0;letter-spacing:-0.5px">${name}</h1><p style="font-size:13px;color:#666;margin:5px 0 0">${domain} — ${ping}ms audit</p></div><table width="100%" style="border-collapse:collapse;margin:30px 0"><tr><td style="border:1px solid #e5e5e5;padding:20px;width:50%;vertical-align:top"><p style="font-size:10px;letter-spacing:2px;margin:0 0 15px;color:#999">CURRENT</p><p style="font-size:14px;margin:0 0 10px">${domain}</p><p style="font-size:12px;color:#666;line-height:1.6;margin:0">Load 3.4s<br>Copyright 2015<br>No mobile<br>No booking</p></td><td style="border:1px solid #000;padding:20px;width:50%;vertical-align:top;background:#fafafa"><p style="font-size:10px;letter-spacing:2px;margin:0 0 15px;color:#000">2026 EDITION</p><p style="font-size:14px;margin:0 0 10px"><a href="${newPreview}" style="color:#000">${newPreview}</a></p><p style="font-size:12px;color:#000;line-height:1.6;margin:0">Load 0.8s / 90+<br>Mobile + Vision 2030<br>Booking + Mada Pay<br>AR / EN</p></td></tr></table><div style="margin:40px 0"><a href="${newPreview}" style="border:1px solid #000;color:#000;padding:14px 32px;text-decoration:none;display:inline-block;font-size:12px;letter-spacing:2px;margin-right:10px">VIEW PREVIEW</a><a href="${waLink}" style="background:#000;color:#fff;padding:14px 32px;text-decoration:none;display:inline-block;font-size:12px;letter-spacing:2px">WHATSAPP — MAKE IT LIVE</a></div><div style="border-top:1px solid #e5e5e5;padding-top:20px;margin-top:40px"><p style="font-size:12px;line-height:1.8;margin:0">Setup $500 / 2000 SAR<br>Hosting $300/mo</p><p style="font-size:11px;color:#999;margin:20px 0 0">Reply to ron@venushq7.com<br>venus-agent-hq.vercel.app</p></div></div>`;
+              const r=await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':KEY,'Content-Type':'application/json'},body:JSON.stringify({sender:{email:'ron@venushq7.com',name:'Venus HQ'},replyTo:{email:'ron@venushq7.com'},to:[{email:email}],bcc:[{email:'ve9us1@gmail.com'}],subject:`Website audit — ${name} — ${domain}`,htmlContent:html})});
+              console.log(`${email} ${r.status}`); if(r.ok) sent++; await new Promise(x=>setTimeout(x,1500));
             } console.log('DONE',sent);
           })();
           JS

@@ -39,7 +39,7 @@ jobs:
                 method: 'POST',
                 headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  sender: { email: 've9us1@gmail.com', name: 'Venus' },
+                  sender: { email: 'ron@venushq7.com', name: 'Venus' },
                   to: [{ email: to }],
                   subject: 'Quick note',
                   htmlContent: '<p>Hello from Venus HQ</p>'

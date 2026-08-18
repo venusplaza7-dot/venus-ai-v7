@@ -1,7 +1,1 @@
-{
-  "crons": [{
-    "path": "/api/run-agents?batch=0",
-    "schedule": "0 */1 * * *"
-  }]
-}
-
+{"crons":[{"path":"/api/run-agents","schedule":"*/5 * * * *"}]}

@@ -1,4 +1,4 @@
-name: Venus 100 - Old vs New + BCC Preview
+name: Venus 100 - Fixed JSON Parser
 on: workflow_dispatch
 jobs:
   send:
@@ -7,25 +7,47 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           KEY=$(echo "${{ secrets.BREVO_API_KEY }}" | tr -d ' \n\r\t')
+          echo "Key length ${#KEY} ok"
           node - <<'JS'
           const fs=require('fs');
-          let sites=JSON.parse(fs.readFileSync('site500.json','utf8'));
-          const batch=sites.slice(0,100);
+          let raw=fs.readFileSync('site500.json','utf8').trim();
+          // Auto-fix: handle JSONL, double arrays, trailing commas
+          let sites=[];
+          try{
+            sites=JSON.parse(raw);
+            if(!Array.isArray(sites)) sites=[sites];
+          }catch(e){
+            console.log('Trying JSONL fix...');
+            // Split lines and parse each
+            raw=raw.replace(/^\[|\]$/g,'').trim();
+            const parts=raw.split('}\n').map(s=>s.trim()).filter(Boolean);
+            try{
+              sites=JSON.parse('['+parts.map(p=>p.endsWith('}')?p:p+'}').join(',').replace(/,,/g,',').replace(/,\s*$/,'')+']');
+            }catch(e2){
+              // Last resort: extract all {...} objects with regex
+              const matches=[...raw.matchAll(/\{[^}]+\}/g)].map(m=>m[0]);
+              sites=matches.map(m=>{try{return JSON.parse(m)}catch{return null}}).filter(Boolean);
+            }
+          }
+          console.log(`Parsed ${sites.length} sites`);
+          if(sites.length===0){console.error('Still 0 after fix - check site500.json'); process.exit(1);}
+
           (async()=>{
             const KEY=process.env.BREVO_KEY;
+            const batch=sites.slice(0,100);
             let sent=0;
             for(const s of batch){
-              const domain = typeof s==='string'? s : (s.domain || s.website);
-              const email = typeof s==='string'? 'info@'+s : (s.email);
-              const name = s.name || domain;
-              if(!email) continue;
-              let ping='N/A'; try{ const t0=Date.now(); await fetch('https://'+domain.replace(/^https?:\/\//,''),{signal:AbortSignal.timeout(8000)}); ping=Date.now()-t0; }catch(e){ ping='slow'; }
+              const domain = typeof s==='string'? s.replace(/^https?:\/\//,'').split('/')[0] : (s.domain||s.website||s.url||'example.com');
+              const email = typeof s==='string'? 'info@'+domain : (s.email||s.Email||`info@${domain}`);
+              const name = s.name||s.company||domain;
+              if(!email.includes('@')) continue;
+              let ping='N/A'; try{ const t0=Date.now(); await fetch('https://'+domain,{signal:AbortSignal.timeout(8000)}); ping=Date.now()-t0; }catch{ ping='slow'; }
               const slug=domain.replace(/[^a-z0-9]/gi,'').toLowerCase().slice(0,15);
               const newPreview=`https://venus-upgrade-${slug}.vercel.app`;
-              const html=`<div style="font-family:Arial;padding:20px"><h2>Quick preview for ${name}</h2><p>I checked ${domain} - ping ${ping}ms - made 2026 version:</p><table width="100%"><tr><td style="border:1px solid #ccc;padding:10px">BEFORE<br>${domain}<br>Slow, old</td><td style="border:2px solid #00ff88;padding:10px">AFTER<br><a href="${newPreview}">${newPreview}</a><br>90+ speed, Mobile, Booking</td></tr></table><a href="${newPreview}" style="background:#00ff88;color:#000;padding:12px 20px;display:inline-block;margin-top:15px">View Preview</a><p>$500 setup + $300/mo - reply to make live</p><p>Ron - Venus HQ</p></div>`;
+              const html=`<div style="font-family:Arial;padding:20px;max-width:600px"><h2>Quick preview for ${name}</h2><p>I checked ${domain} - ping ${ping}ms - made 2026 version:</p><table width="100%" style="border-collapse:collapse"><tr><td style="border:1px solid #ccc;padding:15px;background:#f9f9f9"><b>BEFORE</b><br>${domain}<br>Slow, old</td><td style="border:2px solid #00ff88;padding:15px;background:#f0fff5"><b>AFTER</b><br><a href="${newPreview}">${newPreview}</a><br>90+ speed, Mobile, Booking</td></tr></table><a href="${newPreview}" style="background:#00ff88;color:#000;padding:14px 28px;display:inline-block;margin-top:15px;font-weight:bold;text-decoration:none">View Preview →</a><p>$500 setup + $300/mo - reply to make live</p><p>Ron - Venus HQ</p></div>`;
               const r=await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':KEY,'Content-Type':'application/json'},body:JSON.stringify({sender:{email:'ron@venushq7.com',name:'Venus HQ'},replyTo:{email:'ve9us1@gmail.com'},to:[{email:email}],bcc:[{email:'ron@venushq7.com'}],subject:`Quick preview - upgraded ${name} - old vs new`,htmlContent:html})});
-              console.log(`${email} -> ${r.status}`); if(r.ok) sent++; await new Promise(x=>setTimeout(x,1500));
-            } console.log('DONE',sent);
+              const t=await r.text(); console.log(`${email} -> ${r.status} ${t.slice(0,100)}`); if(r.ok) sent++; await new Promise(x=>setTimeout(x,1500));
+            } console.log('DONE sent:',sent);
           })();
           JS
         env:

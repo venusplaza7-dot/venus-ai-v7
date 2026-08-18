@@ -1,13 +1,86 @@
-name: Venus Send 100 Tonight
+name: Venus 100 - Old vs New Sender
 on: workflow_dispatch
 jobs:
   send:
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      - uses: actions/checkout@v4
+      
+      - name: Send 100 comparisons from ron@venushq7.com
+        run: |
+          # FIXED PATH: Repository secret (not Environment)
           KEY=$(echo "${{ secrets.BREVO_API_KEY }}" | tr -d ' \n\r\t')
-          echo "Key length after trim: ${#KEY}"
-          curl -X POST https://api.brevo.com/v3/smtp/email \
-          -H "api-key: $KEY" \
-          -H "Content-Type: application/json" \
-          -d '{"sender":{"email":"ron@venushq7.com","name":"Venus HQ"},"to":[{"email":"ve9us1@gmail.com"}],"subject":"Trimmed key test","htmlContent":"<p>Trimmed - should land</p>"}' -v 
+          echo "Key ok length: ${#KEY}"
+          
+          node - <<'JS'
+          const fs=require('fs');
+          
+          // Load your 500 sites
+          let sites=[];
+          try{ sites=JSON.parse(fs.readFileSync('site500.json','utf8')); }
+          catch(e){ console.error('site500.json missing',e.message); process.exit(1); }
+          
+          const batch = sites.slice(0,100);
+          console.log(`Loaded ${sites.length}, sending ${batch.length}`);
+          
+          (async()=>{
+            const KEY = process.env.BREVO_KEY;
+            let sent=0;
+            for(const s of batch){
+              const domain = typeof s==='string'? s : (s.domain || s.website || s.url || s.Domain);
+              const email = typeof s==='string'? 'info@'+s : (s.email || s.Email || `info@${domain}`);
+              const name = s.name || s.company || domain;
+              
+              if(!domain || !email) continue;
+              
+              // PING CHECK
+              let ping = 'N/A';
+              try{
+                const t0=Date.now();
+                const r=await fetch('https://'+domain.replace(/^https?:\/\//,''),{signal:AbortSignal.timeout(8000)});
+                ping = Date.now()-t0;
+                console.log(`${domain} ping ${ping}ms status ${r.status}`);
+              }catch(e){ console.log(`${domain} ping FAIL ${e.message}`); ping='FAIL/slow'; }
+              
+              // OLD vs NEW comparison email
+              const clientSlug = domain.replace(/[^a-z0-9]/gi,'').toLowerCase().slice(0,15);
+              const newPreview = `https://venus-upgrade-${clientSlug}.vercel.app`;
+              const oldPreview = `https://${domain.replace(/^https?:\/\//,'')}`;
+              
+              const html = `
+              <div style="font-family:Arial;padding:20px">
+                <h2>Quick preview for ${name}</h2>
+                <p>I checked ${domain} - ping ${ping}ms - and made you a 2026 version:</p>
+                <table width="100%" style="border-collapse:collapse">
+                  <tr>
+                    <td style="border:1px solid #ccc;padding:10px;width:50%"><b>BEFORE (Old)</b><br>${oldPreview}<br>Slow, Copyright old, No mobile booking</td>
+                    <td style="border:2px solid #00ff88;padding:10px;width:50%"><b>AFTER (New 2026)</b><br><a href="${newPreview}">${newPreview}</a><br>✓ 90+ speed<br>✓ Mobile + AR/EN<br>✓ Booking + Mada Pay<br>✓ AI Invoice</td>
+                  </tr>
+                </table>
+                <p><a href="${newPreview}" style="background:#00ff88;color:#000;padding:12px 20px;text-decoration:none;display:inline-block;margin-top:15px">View New Preview</a></p>
+                <p>10 min call to make it live? $500 setup + $300/mo<br>Reply to this email.</p>
+                <p>Ron - Venus HQ<br>venus-agent-hq.vercel.app</p>
+              </div>`;
+              
+              const resp = await fetch('https://api.brevo.com/v3/smtp/email',{
+                method:'POST',
+                headers:{'api-key':KEY,'Content-Type':'application/json'},
+                body:JSON.stringify({
+                  sender:{email:'ron@venushq7.com',name:'Venus HQ'},
+                  replyTo:{email:'ve9us1@gmail.com',name:'Ron'},
+                  to:[{email:email,name:name}],
+                  subject:`Quick preview - upgraded ${name} - old vs new`,
+                  htmlContent: html
+                })
+              });
+              const txt=await resp.text();
+              console.log(`${email} -> ${resp.status} ${txt.slice(0,200)}`);
+              if(resp.ok) sent++;
+              await new Promise(r=>setTimeout(r,1500)); // 1.5s gap to avoid Brevo rate
+              if(sent>=100) break;
+            }
+            console.log('DONE sent:',sent);
+          })();
+          JS
+        env:
+          BREVO_KEY: ${{ secrets.BREVO_API_KEY }}

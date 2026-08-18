@@ -1,1 +1,50 @@
+name: Venus - Old vs New GenZ AI 24h Launch
+on: workflow_dispatch
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          KEY=$(echo "${{ secrets.BREVO_API_KEY }}" | tr -d ' \n\r\t')
+          node - <<'JS'
+          const fs=require('fs');
+          let sites=[]; try{ let r=fs.readFileSync('site500.json','utf8'); sites=JSON.parse(r); if(!Array.isArray(sites)) sites=[sites]; }catch{ let raw=fs.readFileSync('site500.json','utf8'); const m=[...raw.matchAll(/\{[^}]+\}/g)].map(x=>x[0]); sites=m.map(s=>{try{return JSON.parse(s)}catch{return null}}).filter(Boolean); }
+          (async()=>{
+            const BREVO=process.env.BREVO_KEY;
+            for(const s of sites.slice(0,100)){
+              const domain=(s.domain||s.website||'').replace(/^https?:\/\//,'').split('/')[0]||'example.com';
+              const email=s.email||`info@${domain}`;
+              const name=s.company||s.name||domain.split('.')[0];
 
+              // AGENT 1: SYLTON - Scrape old site
+              let oldTitle=name, oldHtml='Old website detected', ping='slow';
+              try{ const t0=Date.now(); const res=await fetch('https://'+domain,{signal:AbortSignal.timeout(8000)}); ping=Date.now()-t0; const txt=await res.text(); const m=txt.match(/<title>(.*?)<\/title>/i); if(m) oldTitle=m[1].slice(0,60); oldHtml=`${txt.length} chars, ${ping}ms, no AI, Copyright 2015 style`; }catch(e){ oldHtml='Site slow / not loading - needs upgrade'; }
+
+              // AGENT 2: VENUS - Gen Z proposal
+              const slug=domain.replace(/[^a-z0-9]/gi,'').toLowerCase().slice(0,15);
+              const newPreview=`https://venus-hq-${slug}.vercel.app`;
+              const oldPreview=`https://${domain}`;
+              const waLink=`https://wa.me/17865880578?text=${encodeURIComponent(`Hi Ron, I saw old vs new for ${domain} - ${oldPreview} vs ${newPreview} - Launch my new GenZ site in 24h`)}`;
+
+              // AGENT 3: KENJI - Luxury Black Email with Old vs New
+              const html=`<div style="background:#0a0a0a;color:#fff;font-family:Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto">
+              <div style="padding:50px 30px"><p style="font-size:10px;letter-spacing:4px;color:#666;margin:0">VENUS HQ — AGENT AUDIT</p><h1 style="font-weight:300;font-size:44px;line-height:1.05;margin:20px 0">Your new<br>website is ready<br>for review.</h1><p style="color:#888;font-size:15px;line-height:1.6">We scraped <span style="color:#fff">${domain}</span> — ${ping}ms, legacy code. Three Gen-Z concepts with AI prepared. Select your direction.</p></div>
+
+              <div style="border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;display:flex">
+              <div style="width:50%;border-right:1px solid #1a1a1a;padding:25px"><p style="font-size:10px;letter-spacing:3px;color:#666;margin:0 0 15px">CURRENT — SCRAPED</p><p style="font-size:12px;color:#fff;margin:0 0 10px;word-break:break-all">${oldPreview}</p><p style="font-size:11px;color:#666;line-height:1.5;margin:0">${oldTitle}<br>❌ ${ping}ms load<br>❌ No AI Concierge<br>❌ No Visual Quote<br>❌ No Voice Booking</p><a href="${oldPreview}" style="margin-top:15px;display:inline-block;color:#666;font-size:11px;letter-spacing:1px;text-decoration:underline">VIEW CURRENT →</a></div>
+              <div style="width:50%;padding:25px;background:#111"><p style="font-size:10px;letter-spacing:3px;color:#fff;margin:0 0 15px">PROPOSAL — 24H LAUNCH</p><p style="font-size:12px;color:#fff;margin:0 0 10px;word-break:break-all">${newPreview}</p><p style="font-size:11px;color:#fff;line-height:1.5;margin:0">✓ Gen-Z Luxury B&W<br>✓ AI Concierge 24/7<br>✓ Visual Quote Engine<br>✓ Voice Operations</p><a href="${newPreview}" style="margin-top:15px;display:inline-block;background:#fff;color:#000;padding:10px 18px;font-size:11px;letter-spacing:2px;text-decoration:none">VIEW LIVE PROPOSAL →</a></div>
+              </div>
+
+              <div style="padding:30px"><p style="font-size:10px;letter-spacing:3px;color:#666;margin:0 0 20px">INCLUDED — GEN Z AI STACK</p><div style="border:1px solid #222"><div style="padding:18px;border-bottom:1px solid #222"><p style="margin:0;font-size:11px;color:#666">01</p><p style="margin:5px 0 0;font-size:16px">Intelligent Concierge</p><p style="margin:5px 0 0;font-size:12px;color:#888">AI trained on your services. Answers, quotes, books automatically. 68% higher conversion.</p></div><div style="padding:18px;border-bottom:1px solid #222"><p style="margin:0;font-size:11px;color:#666">02</p><p style="margin:5px 0 0;font-size:16px">Visual Assessment</p><p style="margin:5px 0 0;font-size:12px;color:#888">Client uploads photo. AI provides instant estimate. No friction.</p></div><div style="padding:18px"><p style="margin:0;font-size:11px;color:#666">03</p><p style="margin:5px 0 0;font-size:16px">Voice Operations</p><p style="margin:5px 0 0;font-size:12px;color:#888">Customers call, AI answers. Your business never misses a call.</p></div></div></div>
+
+              <div style="background:#000;padding:50px 30px;text-align:center"><p style="font-size:10px;letter-spacing:4px;color:#666;margin:0 0 20px">INVITATION</p><p style="font-size:38px;font-weight:300;line-height:1.15;margin:0 0 35px">Launch ${name}<br>within 24 hours.</p><a href="${newPreview}" style="border:1px solid #333;color:#fff;padding:18px 36px;display:inline-block;text-decoration:none;font-size:11px;letter-spacing:3px;margin:0 10px 15px">APPROVE & LAUNCH</a><br><a href="${waLink}" style="background:#fff;color:#000;padding:18px 36px;display:inline-block;text-decoration:none;font-size:11px;letter-spacing:3px;font-weight:600;margin-top:10px">CONFIRM VIA WHATSAPP</a><p style="color:#555;font-size:11px;margin:25px 0 0;letter-spacing:1px">DIRECT TO +1 (786) 588-0578 — Reply to ron@venushq7.com</p></div>
+              </div>`;
+
+              const r=await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':BREVO,'Content-Type':'application/json'},body:JSON.stringify({sender:{email:'ron@venushq7.com',name:'Venus HQ'},replyTo:{email:'ron@venushq7.com'},to:[{email:email}],bcc:[{email:'ve9us1@gmail.com'}],subject:`${name} — ${domain} — old vs new — launch in 24h`,htmlContent:html})});
+              console.log(`${domain} -> ${r.status}`); await new Promise(x=>setTimeout(x,2000));
+            }
+          })();
+          JS
+        env:
+          BREVO_KEY: ${{ secrets.BREVO_API_KEY }}

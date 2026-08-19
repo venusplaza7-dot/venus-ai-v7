@@ -1,9 +1,128 @@
-name: Venus - Validate Fixed
+name: Venus - Luxury B&W Old vs New - Monitor Every 10
 on: workflow_dispatch
+
 jobs:
-  validate:
+  send:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          node -e "let s=JSON.parse(require('fs').readFileSync('public/site500.json','utf8')); s=s.filter(x=>!x.domain.includes('example')); console.log('VALID:',s.length,'domains - no example.com'); if(s.length==0) process.exit(1)"
+
+      - name: Prepare and Validate
+        run: |
+          node - <<'JS'
+          const fs=require('fs');
+          let p='public/site500.json'; if(!fs.existsSync(p)) p='site500.json';
+          const raw=fs.readFileSync(p,'utf8').trim();
+          if(raw.startsWith('<')) throw new Error('HTML - restore file');
+          let data=JSON.parse(raw);
+          data=data.filter(s=>s.domain&&!s.domain.includes('example')&&s.email&&s.email.includes('@')&&!s.email.includes('ve9us1'));
+          if(data.length>100) data=data.slice(0,100);
+          console.log(`Ready ${data.length} real domains`);
+          fs.writeFileSync('to_send.json', JSON.stringify(data));
+          JS
+
+      - name: Send Luxury Proposals with Monitoring
+        env:
+          BREVO_KEY: ${{ secrets.BREVO_API_KEY }}
+        run: |
+          node - <<'JS'
+          const fs=require('fs');
+          const sites=JSON.parse(fs.readFileSync('to_send.json','utf8'));
+          const KEY=process.env.BREVO_KEY?.trim();
+          if(!KEY){ console.log('No key - add last'); process.exit(0); }
+
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+          (async()=>{
+            for(let i=0;i<sites.length;i++){
+              const s=sites[i];
+              const num=i+1;
+              const domain=(s.domain||'').replace(/^https?:\/\//,'').split('/')[0].toLowerCase();
+              const slug=domain.replace(/[^a-z0-9]/gi,'').toLowerCase().slice(0,20);
+              const oldUrl=`https://${domain}`;
+              const proposalUrl=`https://venus-agent-hq.vercel.app/demo/${slug}?domain=${domain}`;
+              const oldImg=`https://image.thum.io/get/width/600/crop/500/noanimate/${oldUrl}`;
+              const newImg=`https://image.thum.io/get/width/600/crop/500/noanimate/${proposalUrl}`;
+
+              // WhatsApp with website link so you can make live in 15 min
+              const waText=`Hi Venus HQ, I want to launch ${domain}. My proposal: ${proposalUrl} - Make it live in 15 min with Gen Z AI features. My email: ${s.email}`;
+              const waLink=`https://wa.me/17865880578?text=${encodeURIComponent(waText)}`;
+
+              // LUXURY BLACK & WHITE HTML - Your design from photos
+              const html=`<!DOCTYPE html><html><body style="margin:0;background:#000">
+              <div style="background:#0a0a0a;color:#fff;font-family:'Inter',Arial,sans-serif;max-width:680px;margin:0 auto;border:1px solid #222">
+                <div style="padding:50px 40px 30px"><p style="font-size:10px;letter-spacing:4px;color:#555;margin:0">VENUS HQ • HOUSTON ELITE</p><h1 style="font-weight:200;font-size:52px;line-height:0.95;margin:24px 0 20px;letter-spacing:-1px">Your website<br>is ready<br>for review.</h1><p style="color:#888;font-size:14px;line-height:1.6;margin:0">We scraped <span style="color:#fff">${domain}</span> — analyzed performance, legacy code. Three Gen-Z concepts with AI prepared. Select your direction. Live in 24h, no upfront.</p></div>
+
+                <div style="display:flex;border-top:1px solid #222;border-bottom:1px solid #222">
+                  <div style="width:50%;padding:24px;border-right:1px solid #222">
+                    <p style="font-size:10px;letter-spacing:3px;color:#666;margin:0 0 12px">CURRENT — SCRAPED</p>
+                    <a href="${oldUrl}" style="color:#4a90e2;font-size:13px;word-break:break-all">${oldUrl}</a>
+                    <p style="color:#888;font-size:12px;margin:12px 0 0">${s.name||domain}</p>
+                    <div style="margin-top:18px">
+                      <div style="color:#ff4444;font-size:12px;margin:6px 0">✕ Slow load legacy</div>
+                      <div style="color:#ff4444;font-size:12px;margin:6px 0">✕ No AI Concierge</div>
+                      <div style="color:#ff4444;font-size:12px;margin:6px 0">✕ No Visual Quote</div>
+                      <div style="color:#ff4444;font-size:12px;margin:6px 0">✕ No Voice Booking</div>
+                    </div>
+                    <div style="margin-top:14px"><img src="${oldImg}" style="width:100%;border:1px solid #222"/></div>
+                    <a href="${oldUrl}" style="display:inline-block;margin-top:12px;color:#666;font-size:11px;letter-spacing:2px;text-decoration:none;border-bottom:1px solid #444">VIEW CURRENT →</a>
+                  </div>
+                  <div style="width:50%;padding:24px;background:#111">
+                    <p style="font-size:10px;letter-spacing:3px;color:#aaa;margin:0 0 12px">PROPOSAL — 24H LAUNCH</p>
+                    <a href="${proposalUrl}" style="color:#4a90e2;font-size:13px;word-break:break-all">${proposalUrl}</a>
+                    <div style="margin-top:18px">
+                      <div style="color:#fff;font-size:12px;margin:6px 0">✓ Gen-Z Luxury B&W</div>
+                      <div style="color:#fff;font-size:12px;margin:6px 0">✓ AI Concierge 24/7</div>
+                      <div style="color:#fff;font-size:12px;margin:6px 0">✓ Visual Quote Engine</div>
+                      <div style="color:#fff;font-size:12px;margin:6px 0">✓ Voice Operations</div>
+                    </div>
+                    <div style="margin-top:14px"><img src="${newImg}" style="width:100%;border:1px solid #333"/></div>
+                    <a href="${proposalUrl}" style="display:inline-block;margin-top:16px;background:#fff;color:#000;padding:12px 18px;font-size:11px;letter-spacing:2px;text-decoration:none">VIEW LIVE PROPOSAL →</a>
+                  </div>
+                </div>
+
+                <div style="padding:32px 40px">
+                  <p style="font-size:10px;letter-spacing:3px;color:#555;margin:0 0 16px">INCLUDED — GEN Z AI STACK</p>
+                  <div style="border:1px solid #222">
+                    <div style="padding:18px 20px;border-bottom:1px solid #222"><p style="font-size:11px;color:#666;margin:0">01</p><p style="font-size:16px;color:#fff;margin:6px 0 4px">Intelligent Concierge</p><p style="font-size:12px;color:#888;margin:0;line-height:1.5">AI trained on your services. Answers, quotes, books automatically. 68% higher conversion.</p></div>
+                    <div style="padding:18px 20px;border-bottom:1px solid #222"><p style="font-size:11px;color:#666;margin:0">02</p><p style="font-size:16px;color:#fff;margin:6px 0 4px">Visual Assessment</p><p style="font-size:12px;color:#888;margin:0;line-height:1.5">Client uploads photo. AI provides instant estimate. No friction.</p></div>
+                    <div style="padding:18px 20px"><p style="font-size:11px;color:#666;margin:0">03</p><p style="font-size:16px;color:#fff;margin:6px 0 4px">Voice Operations</p><p style="font-size:12px;color:#888;margin:0;line-height:1.5">Customers call, AI answers. Your business never misses a call.</p></div>
+                  </div>
+                </div>
+
+                <div style="padding:40px;text-align:center;border-top:1px solid #222">
+                  <p style="font-size:10px;letter-spacing:4px;color:#555;margin:0 0 10px">INVITATION</p>
+                  <p style="font-size:42px;font-weight:200;line-height:1.1;margin:0 0 24px">Launch ${domain}<br>within 24 hours.</p>
+                  <a href="${waLink}" style="display:inline-block;background:#fff;color:#000;padding:18px 42px;font-size:12px;letter-spacing:3px;text-decoration:none;font-weight:600">APPROVE & LAUNCH VIA WHATSAPP</a>
+                  <p style="font-size:10px;color:#444;margin-top:18px;word-break:break-all">WhatsApp includes: ${domain} • ${proposalUrl}<br>+1 (786) 588-0578 • Launch in 15 min with all add-ons Gen Z 2026</p>
+                </div>
+              </div></body></html>`;
+
+              const payload={sender:{email:'ron@venushq7.com',name:'Venus HQ'},replyTo:{email:'ron@venushq7.com'},to:[{email:s.email}],bcc:[{email:'ve9us1@gmail.com'}],subject:`${domain} — Your luxury B&W website is ready — 24h launch`,htmlContent:html};
+
+              // MONITOR EVERY 10th
+              const isCheckpoint=(num%10===0);
+              if(isCheckpoint){
+                console.log(`\n=== CHECKPOINT ${num}/100 ===`);
+                console.log(`Domain: ${domain} -> ${s.email}`);
+                console.log(`Proposal: ${proposalUrl}`);
+                console.log(`WA: ${waLink}`);
+                console.log(`Pausing for 60s for you to check ve9us1@gmail.com BCC...`);
+                // Send checkpoint preview to you
+                await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':KEY,'Content-Type':'application/json'},body:JSON.stringify({...payload,to:[{email:'ve9us1@gmail.com'}],subject:`[CHECK ${num}/100] ${domain} - REVIEW BEFORE NEXT 10`,htmlContent:html})});
+                await sleep(60000);
+              }
+
+              const res=await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':KEY,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+              const txt=await res.text();
+              console.log(`${num}. ${domain} -> ${s.email} Status:${res.status} ${isCheckpoint?'[CHECKPOINT]':''}`);
+              if(!res.ok) console.log(txt);
+              await sleep(3000);
+
+              if(isCheckpoint){
+                console.log(`--- End of batch ${num}. Review GitHub logs and email preview. Continuing after 60s pause ---\n`);
+              }
+            }
+            console.log('Done 100 luxury proposals');
+          })();
+          JS

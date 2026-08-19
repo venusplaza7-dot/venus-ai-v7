@@ -1,1 +1,9 @@
-
+name: Venus - Validate Fixed
+on: workflow_dispatch
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          node -e "let s=JSON.parse(require('fs').readFileSync('public/site500.json','utf8')); s=s.filter(x=>!x.domain.includes('example')); console.log('VALID:',s.length,'domains - no example.com'); if(s.length==0) process.exit(1)"

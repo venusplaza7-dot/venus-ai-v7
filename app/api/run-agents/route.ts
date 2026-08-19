@@ -16,6 +16,9 @@ export async function GET(){
   sites=sites.filter((s:any)=> s.domain && !s.domain.includes('example') && s.email?.includes('@'))
   const sample=sites.slice(0,3).map((s:any)=>s.domain)
   return NextResponse.json({ok:true,total:sites.length,sample,ready:'Add key last to send with old+new images'})
+import { buildLiveSite } from '../factory/make-live.js';
+// After finding lead...
+const live = await buildLiveSite(lead);
 }
 
 

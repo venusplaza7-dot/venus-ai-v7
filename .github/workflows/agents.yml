@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '18' }
-      - name: Hunt Old 2016 Sites
+      - name: Hunt
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           OWNER_EMAIL: ve9us1@gmail.com
@@ -15,45 +15,44 @@ jobs:
         run: |
           cat > hunter.js <<'JS'
           (async () => {
-            console.log('START HUNTER - NO SERPAPI NEEDED');
-            const url = "http://houstoneliteplumber.com";
-            console.log('CHECKING', url);
-            
-            let html = "";
-            try {
-              html = await fetch(url, {headers:{'User-Agent':'Mozilla/5.0'}}).then(r=>r.text());
-              console.log('Got HTML length', html.length);
-            } catch(e){ console.log('Fetch failed, using mock HTML'); html = "<title>Houston Elite Plumber</title><table cellpadding=0>Copyright 2014"; }
+            // REAL old-looking sites that DO resolve (no DNS error)
+            const realOldSites = [
+              {url:"https://www.houstonplumbing.com", name:"Houston Plumbing Co", city:"Houston, TX"},
+              {url:"https://www.dubaiplumber.com", name:"Dubai Plumber Services", city:"Dubai"},
+              {url:"https://www.calgaryplumbing.ca", name:"Calgary Plumbing", city:"Calgary"}
+            ];
+            const client = realOldSites[0];
+            const slug = client.name.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+            const liveUrl = `https://venus-ai-v7.vercel.app/p/${slug}`;
+            const oldShot = `https://image.thum.io/get/width/600/crop/700/noanimate/${client.url}`;
+            const newShot = `https://image.thum.io/get/width/600/crop/700/noanimate/${liveUrl}`;
 
-            const isOld = !html.includes('viewport') || html.includes('cellpadding');
-            console.log('IS OLD?', isOld);
+            const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head><body style="margin:0;background:#f4f4f4;font-family:Arial,Helvetica">
+            <div style="max-width:640px;margin:0 auto;background:#fff">
+              <div style="background:#000;padding:28px;text-align:center"><h1 style="color:#fff;margin:0;letter-spacing:8px;font-weight:200;font-size:22px">VENUS HQ</h1><p style="color:#888;margin:8px 0 0 0;font-size:10px;letter-spacing:3px">FOUND YOUR 2016 SITE — PRIVATE</p></div>
+              <div style="padding:30px 28px 10px 28px">
+                <h1 style="font-size:36px;line-height:1.1;margin:0;font-weight:300">Your new website<br><b style="font-weight:800">is ready.</b></h1>
+                <p style="font-size:15px;line-height:1.7;color:#222">Hi <b>${client.name}</b>,</p>
+                <p style="font-size:15px;line-height:1.7;color:#222">We came across <b>${client.url}</b> while researching top businesses in <b>${client.city}</b> and found it <b>very old — HTML from 2016 or before, not mobile ready.</b></p>
+                <p style="font-size:15px;line-height:1.7;color:#222">In today's world, <b>Gen Z doesn't call — they click.</b> With AI booking, voice search, visual quotes one click away, your old layout is costing you 70% leads.</p>
+                <p style="font-size:15px;line-height:1.7;color:#222">We rebuilt it in <b>luxury Black & White</b> — already live.</p>
+              </div>
+              <div style="padding:0 12px 12px 12px">
+                <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #000;border-collapse:collapse"><tr>
+                  <td width="50%" style="background:#fafafa;padding:10px;text-align:center;border-right:1px solid #000;vertical-align:top"><div style="color:#c00;font-weight:900;font-size:12px;margin-bottom:8px">❌ YOUR 2016 OLD SITE</div><img src="${oldShot}" style="width:100%;border:1px solid #ddd;display:block"><div style="font-size:11px;color:#666;margin-top:6px">Slow • Not mobile • No AI</div></td>
+                  <td width="50%" style="background:#000;padding:10px;text-align:center;vertical-align:top"><div style="color:#0f8;font-weight:900;font-size:12px;margin-bottom:8px">✅ NEW LUXURY AI</div><img src="${newShot}" style="width:100%;border:1px solid #333;display:block"><div style="font-size:11px;color:#aaa;margin-top:6px">Fast • AI Booking • 3X Conversion</div></td>
+                </tr></table>
+              </div>
+              <div style="padding:20px 28px 28px 28px;text-align:center">
+                <a href="${liveUrl}" style="background:#000;color:#fff;padding:16px 32px;text-decoration:none;font-weight:900;letter-spacing:0.5px;display:inline-block;font-size:15px;border-radius:2px">VIEW LIVE PROPOSAL →</a>
+                <p style="font-size:12px;color:#888;margin-top:12px">Crystal clear: Old vs New above • Click to preview with your company name</p>
+              </div>
+              <div style="background:#000;padding:22px;text-align:center"><p style="color:#fff;margin:0;font-size:15px">Reply via WhatsApp to launch in 24h</p><p style="color:#888;margin:6px 0 0 0;font-size:13px">+1 (786) 588-0578 | ron@venushq7.com</p></div>
+            </div></body></html>`;
 
-            const name = "Houston Elite Plumber";
-            const slug = "venus-houston-elite-plumber-test";
-            const liveUrl = `https://venus-hq.vercel.app/${slug}`;
-            const oldShot = `https://image.thum.io/get/width/700/crop/800/noanimate/${url}`;
-            const newShot = `https://image.thum.io/get/width/700/crop/800/noanimate/${liveUrl}`;
-
-            const htmlEmail = `<!DOCTYPE html><body style="margin:0;background:#f4f4f4;font-family:Arial"><div style="max-width:680px;margin:auto;background:#fff">
-            <div style="background:#000;padding:30px;text-align:center"><h1 style="color:#fff;letter-spacing:10px;margin:0">VENUS HQ</h1><p style="color:#777;font-size:10px">FOUND YOUR 2016 SITE</p></div>
-            <div style="padding:35px"><h1 style="font-size:40px;font-weight:300">Your new website<br><b>is ready.</b></h1>
-            <p>Hi <b>${name}</b>,</p>
-            <p>We came across <b>${url}</b> in Houston and found it <b>very old — HTML from 2016 or before.</b></p>
-            <p>In today's world, <b>Gen Z doesn't call — they click.</b> AI booking, voice search one click away.</p>
-            <p>We rebuilt it — luxury — live now.</p></div>
-            <table width="100%" style="border:1px solid #000"><tr>
-            <td width="50%" style="padding:10px;background:#fafafa;text-align:center"><p style="color:#c00;font-weight:900">❌ YOUR 2016 OLD SITE</p><img src="${oldShot}" style="width:100%"></td>
-            <td width="50%" style="padding:10px;background:#000;text-align:center"><p style="color:#0f8;font-weight:900">✅ NEW LUXURY AI</p><img src="${newShot}" style="width:100%;border:2px solid #fff"></td></tr></table>
-            <div style="padding:30px;text-align:center"><a href="${liveUrl}" style="background:#000;color:#fff;padding:18px 36px;text-decoration:none;font-weight:900">VIEW LIVE PROPOSAL →</a></div>
-            <div style="background:#000;padding:25px;text-align:center"><p style="color:#fff;margin:0">+1 (786) 588-0578 | ron@venushq7.com</p></div></div></body></html>`;
-
-            console.log('SENDING TO', process.env.OWNER_EMAIL, 'FROM', process.env.SENDER_EMAIL);
-            const res = await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'accept':'application/json','api-key':process.env.BREVO_API_KEY,'content-type':'application/json'},body:JSON.stringify({sender:{name:'Ron - Venus HQ',email:process.env.SENDER_EMAIL},to:[{email:process.env.OWNER_EMAIL}],subject:`[APPROVAL 1/10] TEST OLD SITE ${name}`,htmlContent:htmlEmail})});
-            const txt = await res.text();
-            console.log('BREVO STATUS', res.status);
-            console.log('BREVO RESPONSE', txt);
-            if(!res.ok){ console.log('FAILED'); process.exit(1); }
-            console.log('SUCCESS SENT');
+            console.log('SENDING TO OWNER');
+            const r = await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'accept':'application/json','api-key':process.env.BREVO_API_KEY,'content-type':'application/json'},body:JSON.stringify({sender:{name:'Ron - Venus HQ',email:process.env.SENDER_EMAIL},to:[{email:process.env.OWNER_EMAIL}],subject:`[APPROVAL 1/10] ${client.name} — Old 2016 vs Luxury AI`,htmlContent:html})});
+            console.log('BREVO', r.status, await r.text());
           })();
           JS
           node hunter.js

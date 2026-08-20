@@ -11,17 +11,32 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm install @getbrevo/brevo
       - name: Send Luxury Proposal
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           OWNER_EMAIL: ve9us1@gmail.com
         run: |
           cat > ./send.js <<'JS'
-          const brevo = require('@getbrevo/brevo');
-          const api = new brevo.TransactionalEmailsApi();
-          api.setApiKey(0, process.env.BREVO_API_KEY);
-          const html = `<!DOCTYPE html><html><body style="margin:0;background:#000;color:#fff;font-family:Arial"><div style="background:#000;padding:30px;text-align:center;border-bottom:2px solid #fff"><h1 style="letter-spacing:6px;margin:0">VENUS AI</h1><p style="color:#888;letter-spacing:3px">LUXURY BLACK & WHITE EDITION</p></div><div style="background:#fff;color:#000;padding:25px;text-align:center"><h2 style="margin:0">Houston Elite Plumber</h2><p style="color:#666">Houston, TX | Plumber</p></div><table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse"><tr><td width="50%" style="background:#111;padding:20px;text-align:center;border-right:1px solid #333"><p style="color:#ff4444;font-weight:bold">❌ OLD WEBSITE</p><div style="background:#222;height:220px;display:flex;align-items:center;justify-content:center;color:#888;border:1px solid #333">Old Site Preview<br>Slow / Outdated / No Booking</div><p style="color:#666;font-size:12px">Old: example.com</p></td><td width="50%" style="background:#000;padding:20px;text-align:center"><p style="color:#00ff88;font-weight:bold">✅ NEW LUXURY BLACK/WHITE</p><div style="background:#fff;color:#000;height:220px;display:flex;align-items:center;justify-content:center;font-weight:bold;border:2px solid #fff">LUXURY DESIGN<br>Fast + Booking + SEO<br>Black & White Premium</div><p style="color:#888;font-size:12px">New: venus-ai-v7.vercel.app</p></td></tr></table><div style="background:#fff;color:#000;padding:30px;text-align:center"><h3 style="letter-spacing:2px">WHAT YOU WILL GET - LIVE PREVIEW</h3><p style="color:#666">Click below to see full luxury site</p><a href="https://venus-ai-v7.vercel.app/live/houston-elite-plumber" style="background:#000;color:#fff;padding:15px 30px;text-decoration:none;font-weight:bold;letter-spacing:1px;display:inline-block">VIEW LIVE PREVIEW →</a></div><div style="background:#000;padding:30px;text-align:center;border-top:2px solid #fff"><p style="color:#fff">Ready to dominate Houston?</p><a href="https://github.com/venusplaza7-dot/venus-ai-v7/actions" style="background:#fff;color:#000;padding:16px 32px;text-decoration:none;font-weight:bold;font-size:16px;display:inline-block">✅ APPROVE THIS LUXURY DESIGN</a><p style="color:#666;font-size:10px;margin-top:15px">SAMPLE 1 of 275 | 1 per 5 minutes | Max 275/night | Luxury Edition</p></div></body></html>`;
-          api.sendTransacEmail({sender:{email:'luxury@venus-ai-v7.vercel.app',name:'Venus Luxury'},to:[{email:process.env.OWNER_EMAIL}],subject:'SAMPLE 1/275 - LUXURY Black/White Before/After + Live Preview',htmlContent:html}).then(()=>{console.log('SENT TO',process.env.OWNER_EMAIL);}).catch(e=>{console.error(JSON.stringify(e.response?.body||e.message));process.exit(1);});
+          const html = `<!DOCTYPE html><html><body style="margin:0;background:#000;color:#fff;font-family:Arial"><div style="background:#000;padding:30px;text-align:center;border-bottom:2px solid #fff"><h1 style="letter-spacing:6px;margin:0">VENUS AI</h1><p style="color:#888;letter-spacing:3px">LUXURY BLACK & WHITE</p></div><div style="background:#fff;color:#000;padding:25px;text-align:center"><h2>Houston Elite Plumber</h2><p>Houston, TX | Plumber</p></div><table width="100%" style="border-collapse:collapse"><tr><td width="50%" style="background:#111;padding:20px;text-align:center"><p style="color:#ff4444;font-weight:bold">❌ OLD</p><div style="background:#222;height:220px;padding-top:80px">Old / Slow</div></td><td width="50%" style="background:#000;padding:20px;text-align:center"><p style="color:#00ff88;font-weight:bold">✅ NEW LUXURY</p><div style="background:#fff;color:#000;height:220px;padding-top:80px"><b>BLACK/WHITE FAST + BOOKING</b></div></td></tr></table><div style="background:#fff;color:#000;padding:30px;text-align:center"><h3>WHAT YOU WILL GET</h3><a href="https://venus-ai-v7.vercel.app/live/houston-elite-plumber" style="background:#000;color:#fff;padding:15px 30px;text-decoration:none">VIEW LIVE PREVIEW</a></div><div style="background:#000;padding:30px;text-align:center"><a href="https://github.com/venusplaza7-dot/venus-ai-v7/actions" style="background:#fff;color:#000;padding:16px 32px;text-decoration:none;font-weight:bold">✅ APPROVE</a></div></body></html>`;
+          
+          fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+              'accept': 'application/json',
+              'api-key': process.env.BREVO_API_KEY,
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+              sender: { name: 'Venus Luxury', email: 'luxury@venus-ai-v7.vercel.app' },
+              to: [{ email: process.env.OWNER_EMAIL }],
+              subject: 'SAMPLE 1/275 - LUXURY Black/White Before/After + Live Preview',
+              htmlContent: html
+            })
+          }).then(async r => {
+            const t = await r.text();
+            console.log('Status', r.status, t);
+            if(!r.ok) process.exit(1);
+            else console.log('SENT');
+          }).catch(e=>{ console.error(e); process.exit(1); });
           JS
           node ./send.js

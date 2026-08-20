@@ -15,28 +15,31 @@ jobs:
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           OWNER_EMAIL: ve9us1@gmail.com
+          SENDER_EMAIL: ron@venushq7.com
         run: |
           cat > ./send.js <<'JS'
-          const html = `<!DOCTYPE html><html><body style="margin:0;background:#000;color:#fff;font-family:Arial"><div style="background:#000;padding:30px;text-align:center;border-bottom:2px solid #fff"><h1 style="letter-spacing:6px;margin:0">VENUS AI</h1><p style="color:#888;letter-spacing:3px">LUXURY BLACK & WHITE</p></div><div style="background:#fff;color:#000;padding:25px;text-align:center"><h2>Houston Elite Plumber</h2><p>Houston, TX | Plumber</p></div><table width="100%" style="border-collapse:collapse"><tr><td width="50%" style="background:#111;padding:20px;text-align:center"><p style="color:#ff4444;font-weight:bold">❌ OLD</p><div style="background:#222;height:220px;padding-top:80px">Old / Slow</div></td><td width="50%" style="background:#000;padding:20px;text-align:center"><p style="color:#00ff88;font-weight:bold">✅ NEW LUXURY</p><div style="background:#fff;color:#000;height:220px;padding-top:80px"><b>BLACK/WHITE FAST + BOOKING</b></div></td></tr></table><div style="background:#fff;color:#000;padding:30px;text-align:center"><h3>WHAT YOU WILL GET</h3><a href="https://venus-ai-v7.vercel.app/live/houston-elite-plumber" style="background:#000;color:#fff;padding:15px 30px;text-decoration:none">VIEW LIVE PREVIEW</a></div><div style="background:#000;padding:30px;text-align:center"><a href="https://github.com/venusplaza7-dot/venus-ai-v7/actions" style="background:#fff;color:#000;padding:16px 32px;text-decoration:none;font-weight:bold">✅ APPROVE</a></div></body></html>`;
-          
+          const html = `<!DOCTYPE html><html><body style="margin:0;background:#000;color:#fff;font-family:Arial">
+          <div style="background:#000;padding:30px;text-align:center;border-bottom:2px solid #fff">
+          <h1 style="letter-spacing:6px;margin:0">VENUS AI</h1><p style="color:#888">LUXURY BLACK & WHITE</p>
+          </div>
+          <div style="background:#fff;color:#000;padding:25px;text-align:center"><h2>Houston Elite Plumber</h2><p>Houston, TX</p></div>
+          <table width="100%" style="border-collapse:collapse"><tr>
+          <td width="50%" style="background:#111;padding:20px;text-align:center"><p style="color:#ff4444">❌ OLD</p><div style="background:#222;height:200px;padding-top:80px">Old Site</div></td>
+          <td width="50%" style="background:#000;padding:20px;text-align:center"><p style="color:#00ff88">✅ NEW LUXURY</p><div style="background:#fff;color:#000;height:200px;padding-top:80px"><b>BLACK/WHITE PREMIUM</b></div></td>
+          </tr></table>
+          <div style="background:#fff;color:#000;padding:30px;text-align:center"><h3>LIVE PREVIEW</h3><a href="https://venus-ai-v7.vercel.app/live/houston-elite-plumber" style="background:#000;color:#fff;padding:15px 30px;text-decoration:none">VIEW PREVIEW →</a></div>
+          <div style="background:#000;padding:30px;text-align:center"><a href="https://github.com/venusplaza7-dot/venus-ai-v7/actions" style="background:#fff;color:#000;padding:16px 32px;text-decoration:none;font-weight:bold">✅ APPROVE</a></div>
+          </body></html>`;
+
           fetch('https://api.brevo.com/v3/smtp/email', {
             method: 'POST',
-            headers: {
-              'accept': 'application/json',
-              'api-key': process.env.BREVO_API_KEY,
-              'content-type': 'application/json'
-            },
+            headers: { 'accept':'application/json', 'api-key':process.env.BREVO_API_KEY, 'content-type':'application/json' },
             body: JSON.stringify({
-              sender: { name: 'Venus Luxury', email: 'luxury@venus-ai-v7.vercel.app' },
+              sender: { name: 'Ron - Venus HQ', email: process.env.SENDER_EMAIL },
               to: [{ email: process.env.OWNER_EMAIL }],
-              subject: 'SAMPLE 1/275 - LUXURY Black/White Before/After + Live Preview',
+              subject: 'SAMPLE 1/275 - LUXURY Before/After - ron@venushq7.com',
               htmlContent: html
             })
-          }).then(async r => {
-            const t = await r.text();
-            console.log('Status', r.status, t);
-            if(!r.ok) process.exit(1);
-            else console.log('SENT');
-          }).catch(e=>{ console.error(e); process.exit(1); });
+          }).then(async r=>{ const t=await r.text(); console.log('STATUS',r.status,t); if(!r.ok) process.exit(1); console.log('SENT FROM',process.env.SENDER_EMAIL); }).catch(e=>{ console.error(e); process.exit(1); });
           JS
           node ./send.js

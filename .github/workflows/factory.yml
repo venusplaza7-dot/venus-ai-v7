@@ -1,0 +1,45 @@
+﻿name: Venus Anonymous Factory
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'factory/clients.txt'
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run Anonymous Agent
+        run: |
+          cat factory/clients.txt | while read url; do
+            if [ -z "$url" ]; then continue; fi
+            slug=$(echo $url | sed 's/https:\/\///' | sed 's/www\.//' | cut -d'.' -f1 | sed 's/[^a-z0-9]/-/g')-houston
+            echo "Scraping $url -> $slug"
+            node -e "
+            const fs=require('fs');
+            (async()=>{
+              try{
+                const html=await (await fetch('$url')).text();
+                const phone=html.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/)?.[0]||'(480)-788-7473';
+                const title=html.match(/<title>(.*?)<\/title>/i)?.[1]?.split('|')[0]?.trim()||'Business';
+                const images=(html.match(/<img /gi)||[]).length;
+                const services=[...html.matchAll(/<h[2-3][^>]*>(.*?)<\/h[2-3]>/gi)].slice(0,6).map(m=>m[1].replace(/<[^>]+>/g,'').trim()).filter(Boolean);
+                const data={oldSite:'$url', phone, title, images, services, city:'Houston, TX', scrapedAt:new Date().toISOString()};
+                fs.writeFileSync('factory/${slug}.json', JSON.stringify(data,null,2));
+                console.log('Saved');
+                await fetch('https://venus-ai-v8.vercel.app/api/outreach', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({business:'${slug}', email:'ve9us1@gmail.com', name:title, oldSite:'$url'})});
+              }catch(e){console.log(e)}
+            })();
+            "
+            sleep 2
+          done
+      - name: Commit
+        run: |
+          git config user.name "venus-agent"
+          git config user.email "agent@venushq7.com"
+          git add factory/*.json || true
+          git commit -m "auto-scraped anonymous" || true
+          git push

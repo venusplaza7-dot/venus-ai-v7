@@ -1,0 +1,76 @@
+"use client";
+import { useParams } from 'next/navigation';
+
+export default function BusinessPreview() {
+  const params = useParams();
+  const slug = params.business || "alliance-plumbing-houston";
+
+  // AUTO CONVERT slug to real business name
+  // joe-plumbing-dallas => Joe Plumbing Dallas
+  // alliance-plumbing-houston => Alliance Plumbing Houston
+  const businessName = slug
+   .split('-')
+   .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+   .join(' ');
+
+  const business = {
+    name: businessName,
+    slug: slug,
+    oldSite: `https://${slug.replace(/-/g, '')}.com`, // agent will replace with real scraped URL
+    phone: "Scraped from site",
+    city: businessName.split(' ').slice(-1)[0] // last word = city
+  };
+
+  const tools = [
+    { name: "AI 24/7 Receptionist", locked: true },
+    { name: "Instant Booking", locked: true },
+    { name: "Review Booster", locked: true },
+    { name: "Call Tracking", locked: true },
+  ];
+
+  return (
+    <div style={{minHeight:'100vh', background:'black', color:'white', padding:'20px', fontFamily:'system-ui'}}>
+      {/* HEADER WITH DYNAMIC NAME */}
+      <h1 style={{fontSize:'12px', letterSpacing:'6px', opacity:0.5}}>VENUS AI FOR {business.name.toUpperCase()}</h1>
+      <h2 style={{fontSize:'32px', margin:'10px 0'}}>{business.name}</h2>
+      <p style={{opacity:0.6, fontSize:'14px'}}>Preview generated for {business.name} • Old site scraped • Ready to launch</p>
+
+      {/* TWO BOXES */}
+      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginTop:'30px'}}>
+        <div style={{border:'1px solid #333', borderRadius:'12px', padding:'15px'}}>
+          <p style={{fontSize:'11px', fontWeight:'bold'}}>CURRENT SITE - {business.name}</p>
+          <p style={{fontSize:'11px', opacity:0.5, marginTop:'5px'}}>Verified ONLINE</p>
+          <div style={{background:'white', color:'black', height:'300px', marginTop:'10px', display:'flex', alignItems:'center', justifyContent:'center'}}>
+            Old site: {business.oldSite}<br/>[Agent will load real screenshot here]
+          </div>
+        </div>
+
+        <div style={{border:'2px solid #00ff88', borderRadius:'12px', padding:'15px', cursor:'pointer'}}>
+          <p style={{fontSize:'11px', fontWeight:'bold', color:'#00ff88'}}>✨ NEW AI SITE FOR {business.name.toUpperCase()} - CLICKABLE</p>
+          <p style={{fontSize:'11px', opacity:0.7}}>Ready to launch for {business.name}</p>
+          <div style={{background:'#111', height:'300px', marginTop:'10px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
+            <h3>New Site for {business.name}</h3>
+            <button style={{marginTop:'15px', padding:'10px 20px', background:'white', color:'black', border:'none', fontWeight:'bold'}}>VIEW {business.name.toUpperCase()} PREVIEW</button>
+          </div>
+        </div>
+      </div>
+
+      {/* EMAIL PREVIEW */}
+      <div style={{marginTop:'30px', background:'#111', padding:'20px', borderRadius:'12px', border:'1px solid #222'}}>
+        <p style={{fontSize:'12px', opacity:0.5}}>Email that client will receive:</p>
+        <p style={{marginTop:'10px', fontSize:'14px'}}>Subject: {business.name} - Your new AI website is ready to launch</p>
+        <p style={{marginTop:'5px', fontSize:'14px', opacity:0.7}}>Hi {business.name} team, we built you a new AI site from your old site. Preview: venus-ai-v8.vercel.app/p/{slug}</p>
+      </div>
+
+      {/* TOOLS */}
+      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginTop:'20px'}}>
+        {tools.map((t,i)=>(
+          <div key={i} style={{background:'#111', padding:'12px', borderRadius:'8px', display:'flex', justifyContent:'space-between'}}>
+            <span>{t.name} for {businessName}</span>
+            <span style={{fontSize:'10px', background:'#333', padding:'4px 8px', borderRadius:'10px'}}>🔒 Locked</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

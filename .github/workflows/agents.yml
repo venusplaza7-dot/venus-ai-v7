@@ -1,102 +1,37 @@
-name: Venus - Killer Proposal
-on: workflow_dispatch
+name: Venus Anonymous Factory
+on:
+  push:
+    paths:
+      - 'venus-agent-hq/factory/clients.txt'
+  workflow_dispatch:
+
 jobs:
-  hunt:
+  factory:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '18' }
-      - name: Send Killer Proposal
-        env:
-          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
-          OWNER_EMAIL: ve9us1@gmail.com
-          SENDER_EMAIL: ron@venushq7.com
+        with:
+          node-version: '20'
+      
+      - name: Run Anonymous Scraper
         run: |
-          cat > hunter.js <<'JS'
-          (async () => {
-            // VERIFIED REAL OLD-STYLE SITES - 100% working, not fake
-            const clients = [
-              { url:"https://www.allianceplumbing.com", name:"Alliance Plumbing", city:"Houston, TX", loss:"$18,400/month" },
-              { url:"https://www.legacyplumbing.com", name:"Legacy Plumbing", city:"Houston, TX", loss:"$22,100/month" },
-              { url:"https://www.rapidplumbinghouston.com", name:"Rapid Plumbing Houston", city:"Houston, TX", loss:"$19,700/month" }
-            ];
-            const client = clients[Math.floor(Math.random()*clients.length)];
-            
-            // VERIFY REAL SITE EXISTS
-            try {
-              const r = await fetch(client.url, {method:'HEAD'});
-              console.log('VERIFY', client.url, r.status);
-            } catch(e){ console.log('verify fail', e.message); }
+          cd venus-agent-hq
+          npm install puppeteer || true
+          node factory/make-live.js
+          node factory/agent.js
+      
+      - name: Commit Proposal JSON
+        run: |
+          git config --global user.email "agent@venus.ai"
+          git config --global user.name "Venus Agent"
+          git add venus-agent-hq/factory/*.json
+          git diff --cached --quiet || git commit -m "autonomous proposal $(date +%s)"
+          git push || true
 
-            const slug = client.name.toLowerCase().replace(/[^a-z0-9]+/g,'-');
-            const liveUrl = `https://venus-ai-v7.vercel.app/p/${slug}`;
-            const previewImg = `https://image.thum.io/get/width/650/crop/750/noanimate/${liveUrl}`;
-            const waLink = `https://wa.me/17865880578?text=RON%20-%20Launch%20my%20new%20site%20for%20${encodeURIComponent(client.name)}%20NOW%20-%20${liveUrl}`;
 
-            const html = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"></head><body style="margin:0;background:#ffffff;font-family:Helvetica,Arial">
-            <div style="max-width:600px;margin:0 auto;background:#fff;border:1px solid #eee">
-              
-              <div style="background:#000;color:#fff;padding:18px 32px;display:flex;justify-content:space-between;align-items:center">
-                <span style="letter-spacing:6px;font-size:13px;font-weight:300">VENUS HQ</span>
-                <span style="font-size:9px;letter-spacing:2px;color:#888;border:1px solid #333;padding:4px 8px">CONFIDENTIAL PREVIEW</span>
-              </div>
 
-              <div style="padding:36px 32px 10px 32px">
-                <p style="font-size:10px;letter-spacing:4px;color:#c00;margin:0;font-weight:900">⚠️ YOUR CURRENT SITE IS LOSING MONEY</p>
-                <h1 style="font-size:34px;line-height:1.05;font-weight:300;margin:14px 0 0 0;color:#000">We analyzed <a href="${client.url}" style="color:#000;text-decoration:underline">${client.url}</a><br>and you're losing<br><span style="font-weight:900;background:#000;color:#fff;padding:0 8px">${client.loss}</span> to competitors.</h1>
-                
-                <div style="margin:24px 0;padding:18px;background:#f9f9f9;border-left:3px solid #000">
-                  <p style="font-size:13px;line-height:1.7;margin:0;color:#222"><b>Why? Gen Z doesn't call — they click.</b> Your current site takes 4.7s to load, not mobile, no AI booking, no visual quote. 73% leave in 8 seconds and book your competitor with 1-click AI.</p>
-                </div>
 
-                <p style="font-size:15px;line-height:1.7;margin:0;color:#111"><b>So we didn't ask. We rebuilt it.</b><br>Your new luxury Black & White site with AI Concierge is already live — with YOUR name, YOUR city — ready to launch in 24h.</p>
-              </div>
 
-              <div style="padding:16px 16px 6px 16px">
-                <div style="border:2px solid #000">
-                  <div style="background:#000;color:#fff;padding:10px 16px;display:flex;justify-content:space-between">
-                    <span style="font-size:10px;letter-spacing:3px">🔥 NEW LUXURY AI — LIVE NOW</span>
-                    <span style="font-size:10px;color:#0f8">● ONLINE</span>
-                  </div>
-                  <a href="${liveUrl}" style="display:block;text-decoration:none">
-                    <img src="${previewImg}" style="width:100%;display:block;min-height:300px;background:#f4f4f4" alt="Luxury Preview">
-                  </a>
-                  <div style="padding:14px 16px;background:#fff;display:flex;justify-content:space-between;align-items:center">
-                    <div><div style="font-size:12px;font-weight:900;letter-spacing:2px">${client.name.toUpperCase()}</div><div style="font-size:11px;color:#888">${client.city} • AI BOOKING • 0.9s LOAD</div></div>
-                    <a href="${liveUrl}" style="background:#000;color:#fff;padding:10px 16px;text-decoration:none;font-weight:900;font-size:11px">PREVIEW →</a>
-                  </div>
-                </div>
-                <p style="font-size:11px;color:#888;text-align:center;margin:10px 0 0 0">☝️ This is YOUR actual preview with your company name — click to experience</p>
-              </div>
 
-              <div style="padding:24px 32px 8px 32px">
-                <table width="100%" cellpadding="0" cellspacing="0" style="font-size:12px">
-                  <tr><td style="padding:8px 0;border-bottom:1px solid #eee">❌ Current: 4.7s load • No mobile • No AI</td><td style="padding:8px 0;border-bottom:1px solid #eee;text-align:right;color:#c00;font-weight:bold">Losing 73%</td></tr>
-                  <tr><td style="padding:8px 0">✅ New Venus: 0.9s • AI Concierge • Voice Booking • Visual Quote</td><td style="padding:8px 0;text-align:right;color:#0a0;font-weight:bold">3X bookings</td></tr>
-                </table>
-              </div>
-
-              <div style="padding:28px 32px 36px 32px;text-align:center">
-                <a href="${waLink}" style="background:#000;color:#fff;padding:18px 36px;text-decoration:none;font-weight:900;font-size:14px;letter-spacing:1px;display:inline-block">YES — LAUNCH MY NEW SITE IN 24H →</a>
-                <p style="font-size:11px;color:#999;margin:14px 0 0 0">1-click WhatsApp — no forms, no calls. We handle everything.</p>
-                <p style="font-size:11px;color:#bbb;margin:6px 0 0 0">Link to your current working site: <a href="${client.url}" style="color:#888">${client.url}</a> • Analyzed today</p>
-              </div>
-
-            </div></body></html>`;
-
-            const r = await fetch('https://api.brevo.com/v3/smtp/email',{
-              method:'POST',
-              headers:{'accept':'application/json','api-key':process.env.BREVO_API_KEY,'content-type':'application/json'},
-              body:JSON.stringify({
-                sender:{name:'Ron - Venus HQ', email:process.env.SENDER_EMAIL},
-                to:[{email:process.env.OWNER_EMAIL}],
-                subject:`${client.name}: You're losing ${client.loss}/mo — new site already live`,
-                htmlContent: html
-              })
-            });
-            console.log('SENT', r.status, await r.text());
-          })();
-          JS
-          node hunter.js
 

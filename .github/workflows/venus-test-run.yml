@@ -1,31 +1,28 @@
-name: TEST - Luxury Ron to Ve9us Only
-on: workflow_dispatch
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Send Test Luxury Email
-        env:
-          BREVO_KEY: ${{ secrets.BREVO_API_KEY }}
-        run: |
-          npm install @getbrevo/brevo > /dev/null 2>&1 || true
-          node << 'NODEJS'
-          const fs = require('fs');
-          let html = '';
-          try { html = fs.readFileSync('luxury-final-test.html','utf8'); } catch(e) {}
-          if (!html) {
-            html = '<!DOCTYPE html><html><body style="margin:0;background:#0a0a0a"><div style="max-width:600px;margin:0 auto;background:#0a0a0a;padding:50px 30px;font-family:Helvetica"><p style="color:#666;font-size:10px;letter-spacing:4px">VENUS HQ</p><h1 style="color:#fff;font-weight:200;font-size:42px;line-height:1.1">Your new website is ready for review.</h1><p style="color:#999">We audited houston-elite-plumber.com - unchanged since 2016. Losing Gen Z.</p><a href="https://venus-ai-v8.vercel.app" style="display:inline-block;background:#fff;color:#000;padding:12px 20px;text-decoration:none;font-size:11px;letter-spacing:2px;margin-top:20px">VIEW LIVE PROPOSAL</a><br><br><a href="https://wa.me/17865880578" style="display:inline-block;background:#fff;color:#000;padding:16px 32px;text-decoration:none;font-weight:700">CONFIRM VIA WHATSAPP</a><p style="color:#444;margin-top:20px;font-size:11px">DIRECT TO +1 (786) 588-0578 - ron@venushq7.com</p></div></body></html>';
-          }
-          fetch('https://api.brevo.com/v3/smtp/email',{
-            method:'POST',
-            headers:{'api-key':process.env.BREVO_KEY,'Content-Type':'application/json'},
-            body: JSON.stringify({
-              sender:{email:'ron@venushq7.com',name:'Venus HQ'},
-              replyTo:{email:'ron@venushq7.com'},
-              to:[{email:'ve9us1@gmail.com'}],
-              subject:'TEST - houston-elite-plumber.com - luxury B&W - neat proposal',
-              htmlContent: html
-            })
-          }).then(r=>r.text().then(t=>{console.log('STATUS',r.status); console.log(t);}));
-          NODEJS
+Subject: Your 2016 site is costing you Gen Z customers
+
+Hi Houston Elite Plumber team,
+
+I'm Ron from Venus HQ — we rebuild 2016-era websites into luxury, Gen Z-ready brands that convert in 24h.
+
+WHY WE REACHED YOU:
+We audited houston-elite-plumber.com — it's unchanged since 2016. On mobile it loads slow, not luxury, not Gen Z trusted. You're losing 73% of under-35 customers who judge by design in 3 seconds.
+
+WHAT WE FOUND WRONG:
+• 2016 template, not mobile-optimized
+• No luxury B&W aesthetic / no trust signals
+• Slow load, no AI booking / no instant quote
+• Losing Google ranking vs newer plumbers
+
+WHAT WE DO:
+Venus HQ V8 — we transform old sites into high-ticket luxury brands. No downtime, no upfront. Launch in 24h.
+
+YOUR UPGRADE IS READY:
+We already rebuilt your site in our luxury B&W neat system.
+
+[VIEW LIVE PROPOSAL → venusHQ7.com/p/houston-elite-plumber]
+
+This preview expires in 24h. Reply CONFIRM to push live.
+
+— Ron
+Venus HQ | ron@venushq7.com
+Luxury websites for 2016 brands → Gen Z domination

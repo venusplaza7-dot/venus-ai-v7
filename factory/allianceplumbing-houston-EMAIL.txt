@@ -1,18 +1,8 @@
-const fs=require('fs');
-const path=require('path');
+Subject: Allianceplumbing Houston — Your site is losing Gen Z customers (2016 design)
 
-const files=fs.readdirSync(__dirname).filter(f=>f.endsWith('.json') && !f.includes('clients'));
+Hi Allianceplumbing Houston team,
 
-console.log(`AGENT PITCHING ${files.length} CLIENTS — OLD SITE 2016 ANGLE\n`);
-
-files.forEach(f=>{
-  const j=JSON.parse(fs.readFileSync(path.join(__dirname,f),'utf8'));
-  
-  const email=`Subject: ${j.businessName} — Your site is losing Gen Z customers (2016 design)
-
-Hi ${j.businessName} team,
-
-I checked ${j.oldSite} — it looks like it hasn't been updated since 2016.
+I checked https://www.allianceplumbing.com — it looks like it hasn't been updated since 2016.
 
 Your plumbing work is solid, but your site is costing you business:
 
@@ -24,7 +14,7 @@ Your plumbing work is solid, but your site is costing you business:
 
 I rebuilt a preview for you (Gen Z + AI ready):
 
-${j.preview || 'https://venus-ai-v8.vercel.app/p/'+f.replace('.json','')}
+https://venus-ai-v8.vercel.app/p/allianceplumbing-houston
 
 It has:
 - AI plumber assistant that quotes + books 24/7
@@ -37,13 +27,3 @@ Worth a 10-min call?
 
 Ron — Venus AI
 venus-ai-v8.vercel.app
-`;
-
-  fs.writeFileSync(path.join(__dirname,f.replace('.json','-EMAIL.txt')), email);
-  console.log(`PITCH READY for ${j.businessName} -> ${f.replace('.json','-EMAIL.txt')}`);
-});
-
-console.log('\nDONE — All emails say: OLD SITE 2016 + GEN Z + MISSING AI');
-
-
-

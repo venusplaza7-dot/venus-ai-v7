@@ -1,28 +1,15 @@
-Subject: Your 2016 site is costing you Gen Z customers
+name: venus-test-run
 
-Hi Houston Elite Plumber team,
+on:
+  workflow_dispatch:
 
-I'm Ron from Venus HQ — we rebuild 2016-era websites into luxury, Gen Z-ready brands that convert in 24h.
-
-WHY WE REACHED YOU:
-We audited houston-elite-plumber.com — it's unchanged since 2016. On mobile it loads slow, not luxury, not Gen Z trusted. You're losing 73% of under-35 customers who judge by design in 3 seconds.
-
-WHAT WE FOUND WRONG:
-• 2016 template, not mobile-optimized
-• No luxury B&W aesthetic / no trust signals
-• Slow load, no AI booking / no instant quote
-• Losing Google ranking vs newer plumbers
-
-WHAT WE DO:
-Venus HQ V8 — we transform old sites into high-ticket luxury brands. No downtime, no upfront. Launch in 24h.
-
-YOUR UPGRADE IS READY:
-We already rebuilt your site in our luxury B&W neat system.
-
-[VIEW LIVE PROPOSAL → venusHQ7.com/p/houston-elite-plumber]
-
-This preview expires in 24h. Reply CONFIRM to push live.
-
-— Ron
-Venus HQ | ron@venushq7.com
-Luxury websites for 2016 brands → Gen Z domination
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel factory to send email
+        run: |
+          curl -X POST https://venus-agent-hq.vercel.app/api/scrap-trigger \
+          -H "Content-Type: application/json" \
+          -d '{"test": true, "to": "ve9us1@gmail.com"}'
+          echo "Triggered Vercel - check Gmail in 30 sec"

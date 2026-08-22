@@ -1,21 +1,22 @@
-name: venus-test-run
+name: venus-agent-v8
 on:
   workflow_dispatch:
+
 jobs:
-  test:
+  run-v8-agent:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Send Test Luxury Email
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm install
+
+      - name: Run V8 Factory
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
-        run: |
-          node << 'NODE'
-          (async () => {
-            const client = "Alliance Plumbing Houston";
-            const preview = "https://venus-ai-v8.vercel.app/preview"; // YOUR V8 URL - change if different
-            const html = '<div style="background:#000;padding:24px"><div style="max-width:600px;margin:0 auto;background:#0a0a0a;border:1px solid #1a1a1a;padding:40px"><p style="font-size:10px;letter-spacing:3px;color:#666;margin:0 0 24px 0">VENUS HQ — PRIVATE AUDIT FOR '+client.toUpperCase()+'</p><h1 style="font-family:Georgia,serif;color:#fff;font-size:34px;font-weight:300;line-height:1.1;margin:0 0 24px 0">Your site is unchanged since 2016 — losing Gen Z.</h1><p style="font-family:Arial;color:#999;font-size:14px;line-height:1.7">Hi '+client+' team,<br><br>We reviewed your site. 3 quick findings:</p><p style="font-family:Arial;color:#fff;font-size:14px;line-height:1.8">1. <span style="color:#888">Trust gap</span> — 2016 design, no trust above fold<br>2. <span style="color:#888">Mobile UX</span> — fails Gen Z<br>3. <span style="color:#888">AI</span> — no instant quote / booking</p><p style="font-family:Arial;color:#666;font-size:13px;margin-top:20px">Who we are: Venus HQ — we rebuild home-service sites into luxury AI converters.</p><a href="'+preview+'" style="display:block;background:#fff;color:#000;text-align:center;padding:18px;text-decoration:none;font-family:Arial;font-size:12px;letter-spacing:2px;margin:32px 0 0 0">VIEW PRIVATE PREVIEW →</a><p style="font-family:Arial;color:#444;font-size:11px;margin-top:24px">Reply VENUS for full site. — Ron, ron@venushq7.com</p></div></div>';
-            const r = await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':process.env.BREVO_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({sender:{name:'Ron — Venus HQ',email:'ron@venushq7.com'},to:[{email:'ve9us1@gmail.com'}],subject:client+' — private audit (V8)',htmlContent:html})});
-            console.log('STATUS',r.status,await r.text());
-          })();
-          NODE
+          PREVIEW_DOMAIN: https://venus-ai-v8-git-main-venus13.vercel.app
+        run: node factory/agent.js

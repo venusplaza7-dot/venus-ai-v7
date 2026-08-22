@@ -10,15 +10,11 @@ jobs:
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
         run: |
-          npm install @getbrevo/brevo > /dev/null 2>&1 || true
-          node - << 'NODE'
-          const Brevo = require('@getbrevo/brevo');
-          let api = new Brevo.TransactionalEmailsApi();
-          api.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
-          const email = new Brevo.SendSmtpEmail();
-          email.sender = { name: "Venus HQ", email: "ron@venushq7.com" };
-          email.to = [{ email: "ve9us1@gmail.com" }];
-          email.subject = "VENUS LUXURY TEST - OLD SITE 2016 + GEN Z";
-          email.htmlContent = "<h1>Your new website is ready for review</h1><p>Who we are: Venus HQ</p><p>What's wrong: Site unchanged since 2016, no Gen Z, missing AI</p><a href='https://venus-agent-hq.vercel.app'>VIEW PREVIEW</a>";
-          api.sendTransacEmail(email).then(r => console.log("STATUS", r.response?.statusCode || 201, JSON.stringify(r))).catch(e => console.log("ERROR", e.message));
-          NODE
+          curl -s -X POST https://api.brevo.com/v3/smtp/email \
+            -H "api-key: $BREVO_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "sender": {"name":"Venus HQ","email":"ron@venushq7.com"},
+              "to": [{"email":"ve9us1@gmail.com"}],
+              "subject":"VENUS LUXURY TEST - 2016 SITE + GEN Z",
+              "htmlContent":"<div style=\"background:#000;color:#fff;padding:40px;font-family:sans-serif\"><h1>Your new website is ready for review</h1><p><b>Who we are:</b> Venus HQ - luxury AI sites</p><p><b>What is wrong:</b> Your site unchanged since 2016, missing Gen Z trust, no AI</p><a href=\"https://venus-agent-hq.vercel.app\" style=\"background:#fff;color:#000;padding:12px 24px;text-decoration:none;display:inline-block;margin-top:20px\">VIEW LIVE PREVIEW</a></div>"

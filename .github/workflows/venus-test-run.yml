@@ -1,15 +1,24 @@
 name: venus-test-run
-
 on:
   workflow_dispatch:
-
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Vercel factory to send email
+      - uses: actions/checkout@v4
+      - name: Send Test Luxury Email
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
         run: |
-          curl -X POST https://venus-agent-hq.vercel.app/api/scrap-trigger \
-          -H "Content-Type: application/json" \
-          -d '{"test": true, "to": "ve9us1@gmail.com"}'
-          echo "Triggered Vercel - check Gmail in 30 sec"
+          npm install @getbrevo/brevo > /dev/null 2>&1 || true
+          node - << 'NODE'
+          const Brevo = require('@getbrevo/brevo');
+          let api = new Brevo.TransactionalEmailsApi();
+          api.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
+          const email = new Brevo.SendSmtpEmail();
+          email.sender = { name: "Venus HQ", email: "ron@venushq7.com" };
+          email.to = [{ email: "ve9us1@gmail.com" }];
+          email.subject = "VENUS LUXURY TEST - OLD SITE 2016 + GEN Z";
+          email.htmlContent = "<h1>Your new website is ready for review</h1><p>Who we are: Venus HQ</p><p>What's wrong: Site unchanged since 2016, no Gen Z, missing AI</p><a href='https://venus-agent-hq.vercel.app'>VIEW PREVIEW</a>";
+          api.sendTransacEmail(email).then(r => console.log("STATUS", r.response?.statusCode || 201, JSON.stringify(r))).catch(e => console.log("ERROR", e.message));
+          NODE

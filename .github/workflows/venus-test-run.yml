@@ -12,10 +12,10 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install deps
+      - name: Install
         run: npm install
 
-      - name: Run V8 Factory
+      - name: Run Factory
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           PREVIEW_DOMAIN: https://venus-ai-v8-git-main-venus13.vercel.app

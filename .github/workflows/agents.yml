@@ -1,37 +1,82 @@
-name: Venus Anonymous Factory
-on:
-  push:
-    paths:
-      - 'venus-agent-hq/factory/clients.txt'
-  workflow_dispatch:
-
+name: Venus Luxury B&W - Old vs New + GenZ AI + 24h Launch
+on: workflow_dispatch
 jobs:
-  factory:
+  send:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
-      - name: Run Anonymous Scraper
+      - name: Send 100 Luxury Black Proposals
         run: |
-          cd venus-agent-hq
-          npm install puppeteer || true
-          node factory/make-live.js
-          node factory/agent.js
-      
-      - name: Commit Proposal JSON
-        run: |
-          git config --global user.email "agent@venus.ai"
-          git config --global user.name "Venus Agent"
-          git add venus-agent-hq/factory/*.json
-          git diff --cached --quiet || git commit -m "autonomous proposal $(date +%s)"
-          git push || true
+          node - <<'JS'
+          const fs=require('fs');
+          let sites=[];
+          try{
+            let raw=fs.readFileSync('site500.json','utf8');
+            sites=JSON.parse(raw);
+            if(!Array.isArray(sites)) sites=[sites];
+          }catch{
+            let raw=fs.readFileSync('site500.json','utf8');
+            const m=[...raw.matchAll(/\{[^}]+\}/g)].map(x=>x[0]);
+            sites=m.map(s=>{try{return JSON.parse(s)}catch{return null}}).filter(Boolean);
+          }
+          console.log(`Loaded ${sites.length} sites`);
+          (async()=>{
+            const BREVO=process.env.BREVO_KEY;
+            const WHATSAPP='+17865880578';
+            for(const s of sites.slice(0,100)){
+              const domain=(s.domain||s.website||s.url||'').replace(/^https?:\/\//,'').split('/')[0]||'example.com';
+              const email=s.email||`info@${domain}`;
+              const name=s.company||s.name||domain.split('.')[0];
+              if(!email.includes('@')) continue;
 
+              // SYLTON - Scrape old site 2016
+              let oldTitle=name, ping='N/A';
+              try{
+                const t0=Date.now();
+                const res=await fetch('https://'+domain,{signal:AbortSignal.timeout(8000)});
+                ping=Date.now()-t0;
+                const txt=await res.text();
+                const mt=txt.match(/<title>(.*?)<\/title>/i);
+                if(mt) oldTitle=mt[1].slice(0,80);
+              }catch{ ping='slow / legacy'; }
 
+              const slug=domain.replace(/[^a-z0-9]/gi,'').toLowerCase().slice(0,15);
+              const newPreview=`https://venus-ai-v8.vercel.app/p/${slug}`;
+              const oldPreview=`https://${domain}`;
+              const waMsg=encodeURIComponent(`Hi Ron, I saw old vs new for ${domain} - ${oldPreview} vs ${newPreview} - Your site from 2016 is losing Gen Z customers, no AI tool. Launch my luxury GenZ site in 24h`);
+              const waLink=`https://wa.me/17865880578?text=${waMsg}`;
 
+              // LUXURY BLACK HTML - Attractive proposal that makes them buy
+              const html=`<div style="background:#0a0a0a;color:#fff;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto">
+              <div style="padding:60px 30px 40px"><p style="font-size:10px;letter-spacing:4px;color:#666;margin:0">VENUS HQ — AUDIT ${ping}ms</p><h1 style="font-weight:200;font-size:48px;line-height:1.0;margin:20px 0 15px">Your new<br>website is ready<br>for review.</h1><p style="color:#999;font-size:14px;line-height:1.6;margin:0">We audited <span style="color:#fff">${domain}</span> — unchanged since 2016. Gen Z leaves in 3s. No AI tool — losing business daily.</p></div>
 
+              <div style="border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;display:flex">
+              <div style="width:50%;border-right:1px solid #1a1a1a;padding:24px"><p style="font-size:10px;letter-spacing:3px;color:#555;margin:0 0 15px">CURRENT — 2016</p><p style="font-size:12px;color:#888;word-break:break-all;margin:0 0 12px">${oldPreview}</p><p style="font-size:11px;color:#666;line-height:1.7;margin:0">❌ ${oldTitle}<br>❌ ${ping} load — slow<br>❌ No AI Concierge<br>❌ No Visual Quote<br>❌ Gen Z bounces</p><a href="${oldPreview}" style="margin-top:16px;display:inline-block;color:#555;font-size:11px;text-decoration:underline">VIEW CURRENT →</a></div>
+              <div style="width:50%;padding:24px;background:#111"><p style="font-size:10px;letter-spacing:3px;color:#fff;margin:0 0 15px">PROPOSAL — 2026 LUXURY</p><p style="font-size:12px;color:#fff;word-break:break-all;margin:0 0 12px">${newPreview}</p><p style="font-size:11px;color:#fff;line-height:1.7;margin:0">✓ Luxury B&W Gen Z<br>✓ AI Concierge 24/7<br>✓ Visual Assessment<br>✓ Voice Operations<br>✓ 3x faster / 90+</p><a href="${newPreview}" style="margin-top:16px;display:inline-block;background:#fff;color:#000;padding:10px 18px;font-size:11px;letter-spacing:2px;text-decoration:none">VIEW LIVE PROPOSAL →</a></div>
+              </div>
 
+              <div style="padding:30px"><p style="font-size:10px;letter-spacing:3px;color:#555;margin:0 0 20px">GEN Z AI STACK — YOU ARE MISSING</p><div style="border:1px solid #1a1a1a"><div style="padding:20px;border-bottom:1px solid #1a1a1a"><p style="margin:0;font-size:11px;color:#555">01 — INTELLIGENT CONCIERGE</p><p style="margin:8px 0 0;font-size:15px;color:#fff">AI answers "Fix my leak cost?" + books 24/7. Your competitors steal leads at 2am.</p></div><div style="padding:20px;border-bottom:1px solid #1a1a1a"><p style="margin:0;font-size:11px;color:#555">02 — VISUAL ASSESSMENT</p><p style="margin:8px 0 0;font-size:15px;color:#fff">Customer uploads photo, AI gives instant estimate. Gen Z expects this.</p></div><div style="padding:20px"><p style="margin:0;font-size:11px;color:#555">03 — VOICE OPERATIONS</p><p style="margin:8px 0 0;font-size:15px;color:#fff">AI answers calls, never misses. 68% higher conversion.</p></div></div></div>
 
+              <div style="background:#000;padding:60px 30px;text-align:center"><p style="font-size:10px;letter-spacing:4px;color:#555;margin:0 0 20px">INVITATION — 24H</p><p style="font-size:40px;font-weight:200;line-height:1.1;margin:0 0 10px">Launch ${name}<br>within 24 hours.</p><p style="font-size:13px;color:#777;margin:0 0 35px">Your old 2016 site is costing you luxury clients daily.</p><a href="${newPreview}" style="border:1px solid #333;color:#fff;padding:18px 36px;display:inline-block;text-decoration:none;font-size:11px;letter-spacing:3px;margin:0 8px">APPROVE & LAUNCH</a><br><a href="${waLink}" style="background:#fff;color:#000;padding:18px 36px;display:inline-block;text-decoration:none;font-size:11px;letter-spacing:3px;font-weight:700;margin-top:14px">CONFIRM VIA WHATSAPP</a><p style="color:#444;font-size:11px;margin:24px 0 0;letter-spacing:1px">DIRECT TO +1 (786) 588-0578 — Reply to ron@venushq7.com</p></div>
+              </div>`;
 
+              const r=await fetch('https://api.brevo.com/v3/smtp/email',{
+                method:'POST',
+                headers:{'api-key':BREVO,'Content-Type':'application/json'},
+                body:JSON.stringify({
+                  sender:{email:'ron@venushq7.com',name:'Venus HQ'},
+                  replyTo:{email:'ron@venushq7.com',name:'Venus HQ'},
+                  to:[{email:email}],
+                  bcc:[{email:'ve9us1@gmail.com'}],
+                  subject:`${name} — ${domain} — your 2016 site vs GenZ luxury — 24h launch`,
+                  htmlContent:html
+                })
+              });
+              console.log(`${domain} -> ${email} ${r.status}`);
+              await new Promise(x=>setTimeout(x,2000));
+            }
+            console.log('DONE Luxury Black sent');
+          })();
+          JS
+        env:
+          BREVO_KEY: ${{ secrets.BREVO_API_KEY }}

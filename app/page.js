@@ -1,5 +1,3 @@
-useEffect(() => {
-  fetch(`/api/proposal/${slug}`).then(r=>r.json()).then(d=>{
-    if(d && d.found) setData(d);
-  }).catch(()=>{ setData(null); });
-}, [slug]);
+﻿export default function Home(){
+ return (<div style={{background:'#0a0a0a',minHeight:'100vh',color:'#fff',fontFamily:'Helvetica',padding:'60px 20px'}}><div style={{maxWidth:800,margin:'0 auto',textAlign:'center'}}><p style={{color:'#FF6B00',letterSpacing:'4px',fontSize:11,fontWeight:800}}>VENUS HQ</p><h1 style={{fontSize:56,fontWeight:800,marginTop:20}}>LUXURY WEBSITES<br/><span style={{color:'#FF6B00'}}>IN 24H</span></h1><p style={{color:'#BBBBBB',marginTop:16}}>AI Concierge + Visual Quote + Voice Ops</p><a href="/p/houston-elite-plumber" style={{display:'inline-block',marginTop:30,background:'#A8FF53',color:'#000',padding:'16px 32px',textDecoration:'none',fontWeight:800}}>VIEW DEMO</a></div></div>);
+}

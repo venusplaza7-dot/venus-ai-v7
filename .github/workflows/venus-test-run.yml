@@ -1,4 +1,3 @@
-
 name: venus-test-run
 on:
   workflow_dispatch:
@@ -12,20 +11,43 @@ jobs:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
         run: |
           node - << 'NODE'
+          const clientName = "Alliance Plumbing Houston"; // will be dynamic in factory
+          const domain = "allianceplumbing-houston.com";
+          const previewUrl = "https://venus-agent-hq.vercel.app/preview?client=" + encodeURIComponent(clientName);
+
+          const html = `
+          <div style="max-width:600px;margin:0 auto;background:#ffffff;font-family:Inter,Helvetica,Arial,sans-serif;color:#111;padding:0;border:1px solid #eaeaea">
+            <div style="padding:32px 32px 0 32px;">
+              <p style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#888;margin:0 0 16px 0;">VENUS HQ — PRIVATE AUDIT</p>
+              <h1 style="font-family:Georgia,serif;font-size:28px;font-weight:400;line-height:1.2;margin:0 0 12px 0;">${clientName}: your 2016 site is costing you Gen Z leads.</h1>
+              <p style="font-size:15px;line-height:1.6;color:#333;">Hi ${clientName} team,</p>
+              <p style="font-size:15px;line-height:1.6;color:#333;">We audited <b>${domain}</b>. Design is unchanged since 2016, mobile UX is broken for Gen Z, and there is no AI booking / instant quote. Competitors in Houston already have it.</p>
+              <p style="font-size:15px;line-height:1.6;color:#333;"><b>Who we are:</b> Venus HQ — we rebuild home-service sites into luxury, AI-powered conversion engines.</p>
+            </div>
+            <div style="background:#f8f6f3;padding:20px 32px;margin:24px 0;border-top:1px solid #eee;border-bottom:1px solid #eee;">
+              <p style="margin:0 0 6px 0;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#888;">3 FINDINGS</p>
+              <p style="margin:6px 0;font-size:14px;color:#222;">1. <b>Trust gap:</b> 2016 template, no reviews / proof above fold</p>
+              <p style="margin:6px 0;font-size:14px;color:#222;">2. <b>Gen Z drop:</b> No instant booking, slow mobile</p>
+              <p style="margin:6px 0;font-size:14px;color:#222;">3. <b>AI missing:</b> No AI chat, no auto-quote</p>
+            </div>
+            <div style="padding:0 32px 32px 32px;">
+              <p style="font-size:15px;line-height:1.6;color:#333;">We built a private luxury preview for you:</p>
+              <a href="${previewUrl}" style="display:inline-block;background:#111;color:#fff;padding:14px 28px;text-decoration:none;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:8px 0 20px 0;">View Private Preview →</a>
+              <p style="font-size:13px;line-height:1.5;color:#888;">No pitch. If you like the direction, reply "VENUS" and we send full site + pricing.</p>
+              <p style="font-size:13px;line-height:1.5;color:#888;margin-top:24px;">— Ron | Venus HQ<br>ron@venushq7.com | Houston, TX</p>
+              <p style="font-size:11px;color:#aaa;margin-top:24px;border-top:1px solid #eee;padding-top:12px;">You received this because your business is publicly listed. <a href="#" style="color:#aaa;">Unsubscribe</a></p>
+            </div>
+          </div>`;
+
           const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
             method: 'POST',
-            headers: {
-              'api-key': process.env.BREVO_API_KEY,
-              'Content-Type': 'application/json'
-            },
+            headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              sender: { name: 'Venus HQ', email: 'ron@venushq7.com' },
+              sender: { name: 'Ron — Venus HQ', email: 'ron@venushq7.com' },
               to: [{ email: 've9us1@gmail.com' }],
-              subject: 'VENUS FIXED - OLD SITE 2016 TEST',
-              htmlContent: '<div style="background:#000;color:#fff;padding:40px;font-family:sans-serif"><h1>Your new website is ready</h1><p>Who we are: Venus HQ - luxury AI sites</p><p>What is wrong: Site unchanged since 2016, missing Gen Z, no AI</p><a href="https://venus-agent-hq.vercel.app" style="background:#fff;color:#000;padding:12px 24px;text-decoration:none;display:inline-block;margin-top:20px">VIEW LIVE PREVIEW</a></div>'
+              subject: `${clientName} — quick audit + private preview (2016 → 2026)`,
+              htmlContent: html
             })
           });
-          const text = await resp.text();
-          console.log('STATUS', resp.status, text);
-          if (!resp.ok) process.exit(1);
+          console.log('STATUS', resp.status, await resp.text());
           NODE

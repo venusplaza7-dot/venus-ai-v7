@@ -1,19 +1,1 @@
-name: venus-test-run
 
-on:
-  workflow_dispatch:
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install
-      - name: Send test email
-        env:
-          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
-          TEST_EMAIL: ve9us1@gmail.com
-        run: node factory/agent.js --test

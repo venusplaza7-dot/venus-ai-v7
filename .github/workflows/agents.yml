@@ -20,32 +20,44 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Send Fancy Proposal via Brevo
+      - name: Send Fancy Proposal via Brevo to ron@venushq7.com
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
         run: |
           node -e "
           const client = '${{ inputs.company }}';
           const slug = '${{ inputs.slug }}';
-          const preview = 'https://venus-ai-v8-git-main-venus13.vercel.app/preview/c=' + encodeURIComponent(client);
           const html = \`
-          <div style='background:#000;padding:32px 16px;'><div style='max-width:600px;margin:0 auto;background:#0a0a0a;border-radius:16px;border:1px solid #FFB86A33;padding:32px;'>
-          <p style='margin:0 0 8px 0;font-size:11px;letter-spacing:3px;color:#FFB86A;font-weight:800;'>VENUS HQ — PRIVATE AUDIT SINCE 2016 FOR \${client}</p>
-          <h1 style='margin:0 0 20px 0;font-size:22px;color:#fff;font-weight:800;'>Your site is unchanged since 2016 — losing Gen Z.</h1>
-          <p style='margin:0 0 20px 0;'><span style='color:#71717a;text-decoration:line-through;'>\$1,997</span> <span style='color:#FFB86A;font-size:36px;font-weight:900;'>\$497</span> <span style='border:1px solid #FFB86A66;color:#FFB86A;padding:4px 8px;border-radius:20px;font-size:10px;'>48H SPECIAL</span></p>
+          <!DOCTYPE html>
+          <html>
+          <body style='margin:0;padding:0;background:#f4f4f5;font-family:Arial,sans-serif;'>
+          <center style='width:100%;padding:24px 0;background:#f4f4f5;'>
+          <div style='max-width:600px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #e4e4e7;overflow:hidden;'>
+          <div style='padding:24px 32px 0 32px;'>
+          <p style='margin:0;font-size:10px;letter-spacing:2px;color:#71717a;font-weight:700;'>VENUS HQ — PRIVATE AUDIT SINCE 2016 FOR \${client}</p>
+          <h1 style='margin:12px 0 0 0;font-size:24px;color:#18181b;font-weight:800;'>Your site is unchanged since 2016 — losing Gen Z.</h1>
+          </div>
+          <div style='margin:24px;background:#0a0a0a;border-radius:16px;border:1px solid #FFB86A33;padding:32px;'>
+          <p style='margin:0 0 8px 0;font-size:11px;letter-spacing:3px;color:#FFB86A;font-weight:800;'>YOUR NEW LUXURY SITE IS READY</p>
+          <p style='margin:0 0 20px 0;'><span style='color:#71717a;text-decoration:line-through;font-size:18px;'>\$1,997</span> <span style='color:#71717a;margin:0 8px;'>→</span> <span style='color:#FFB86A;font-size:36px;font-weight:900;'>\$497</span> <span style='border:1px solid #FFB86A66;color:#FFB86A;padding:4px 8px;border-radius:20px;font-size:10px;'>48H SPECIAL</span></p>
           <a href='https://venus-agent-hq.vercel.app/p/\${slug}' style='display:block;background:#FFB86A;color:#000;text-decoration:none;font-weight:800;text-align:center;padding:16px;border-radius:8px;margin-bottom:12px;'>CLICK HERE TO PREVIEW YOUR NEW WEBSITE →</a>
           <a href='https://api.whatsapp.com/send?phone=17865880578&text=APPROVE%20\${slug}%20FOR%20497' style='display:block;background:#25D366;color:#fff;text-decoration:none;font-weight:800;text-align:center;padding:16px;border-radius:8px;'>CONFIRM VIA WHATSAPP - \$497 →</a>
-          <p style='margin-top:24px;color:#e4e4e7;font-size:13px;'>✓ AI Concierge 24/7<br>✓ Visual Quote<br>✓ 20-min Booking + WhatsApp +17865880578<br>✓ 0.8s Load</p>
-          </div></div>
+          <p style='margin-top:24px;color:#e4e4e7;font-size:13px;'>✓ AI Concierge 24/7<br>✓ Visual Quote<br>✓ 20-min Booking<br>✓ Old site stays live</p>
+          </div>
+          <div style='padding:0 32px 32px 32px;'><p style='font-size:12px;color:#18181b;font-weight:700;'>— Venus HQ Since 2016<br>Venusplaza7@gmail.com | +1 (786) 588-0578</p></div>
+          </div>
+          </center>
+          </body>
+          </html>
           \`;
           fetch('https://api.brevo.com/v3/smtp/email', {
             method: 'POST',
             headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              sender: { name: 'Venus HQ', email: 'ron@venushq.com' },
-              to: [{ email: 'Venusplaza7@gmail.com' }],
-              subject: 'PRIVATE AUDIT FOR ' + client + ' — Your $1997→$497 Luxury Site Ready',
+              sender: { name: 'Venus HQ', email: 'Venusplaza7@gmail.com' },
+              to: [{ email: 'ron@venushq7.com' }],
+              subject: 'DRAFT — PRIVATE AUDIT FOR ' + client + ' — $1997→$497 Ready',
               htmlContent: html
             })
-          }).then(r=>r.text().then(t=>{console.log('STATUS',r.status);console.log(t); if(!r.ok) throw new Error(t)}));
+          }).then(r=>r.text().then(t=>{console.log('STATUS',r.status);console.log(t);}));
           "

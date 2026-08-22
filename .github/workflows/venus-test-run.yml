@@ -5,27 +5,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          node - <<'JS'
-          (async()=>{
-            const KEY=process.env.BREVO_KEY;
-            const html=require('fs').readFileSync('./luxury-final-test.html','utf8');
-            // If file not in repo, use inline luxury
-            const finalHtml = html || `<div style="background:#0a0a0a;color:#fff;max-width:600px;margin:0 auto;font-family:Helvetica;padding:50px"><h1 style="font-weight:200;font-size:44px">Your new website is ready for review.</h1><p style="color:#999">We audited houston-elite-plumber.com — unchanged since 2016.</p><a href="https://venus-ai-v8.vercel.app" style="background:#fff;color:#000;padding:12px 20px;display:inline-block;margin-top:20px;text-decoration:none">VIEW LIVE PROPOSAL →</a><br><br><a href="https://wa.me/17865880578" style="background:#fff;color:#000;padding:16px 30px;display:inline-block;text-decoration:none;font-weight:700;letter-spacing:3px">CONFIRM VIA WHATSAPP</a></div>`;
-            const res=await fetch('https://api.brevo.com/v3/smtp/email',{
-              method:'POST',
-              headers:{'api-key':KEY,'Content-Type':'application/json'},
-              body:JSON.stringify({
-                sender:{email:'ron@venushq7.com',name:'Venus HQ'},
-                replyTo:{email:'ron@venushq7.com'},
-                to:[{email:'ve9us1@gmail.com'}],
-                subject:'TEST - houston-elite-plumber.com — luxury B&W — neat proposal — 24h launch',
-                htmlContent: finalHtml
-              })
-            });
-            console.log('TEST SEND STATUS', res.status);
-            console.log(await res.text());
-          })();
-          JS
+      - name: Send Test Luxury Email
         env:
-          BREVO_KEY: ${{ secrets.BREVO_API_KEY }
+          BREVO_KEY: ${{ secrets.BREVO_API_KEY }}
+        run: |
+          npm install @getbrevo/brevo > /dev/null 2>&1 || true
+          node << 'NODEJS'
+          const fs = require('fs');
+          let html = '';
+          try { html = fs.readFileSync('luxury-final-test.html','utf8'); } catch(e) {}
+          if (!html) {
+            html = '<!DOCTYPE html><html><body style="margin:0;background:#0a0a0a"><div style="max-width:600px;margin:0 auto;background:#0a0a0a;padding:50px 30px;font-family:Helvetica"><p style="color:#666;font-size:10px;letter-spacing:4px">VENUS HQ</p><h1 style="color:#fff;font-weight:200;font-size:42px;line-height:1.1">Your new website is ready for review.</h1><p style="color:#999">We audited houston-elite-plumber.com - unchanged since 2016. Losing Gen Z.</p><a href="https://venus-ai-v8.vercel.app" style="display:inline-block;background:#fff;color:#000;padding:12px 20px;text-decoration:none;font-size:11px;letter-spacing:2px;margin-top:20px">VIEW LIVE PROPOSAL</a><br><br><a href="https://wa.me/17865880578" style="display:inline-block;background:#fff;color:#000;padding:16px 32px;text-decoration:none;font-weight:700">CONFIRM VIA WHATSAPP</a><p style="color:#444;margin-top:20px;font-size:11px">DIRECT TO +1 (786) 588-0578 - ron@venushq7.com</p></div></body></html>';
+          }
+          fetch('https://api.brevo.com/v3/smtp/email',{
+            method:'POST',
+            headers:{'api-key':process.env.BREVO_KEY,'Content-Type':'application/json'},
+            body: JSON.stringify({
+              sender:{email:'ron@venushq7.com',name:'Venus HQ'},
+              replyTo:{email:'ron@venushq7.com'},
+              to:[{email:'ve9us1@gmail.com'}],
+              subject:'TEST - houston-elite-plumber.com - luxury B&W - neat proposal',
+              htmlContent: html
+            })
+          }).then(r=>r.text().then(t=>{console.log('STATUS',r.status); console.log(t);}));
+          NODEJS

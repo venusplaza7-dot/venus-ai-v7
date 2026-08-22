@@ -1,1 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>{{COMPANY}} — Luxury Site Ready</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:Inter,Arial,sans-serif;">
 
+<center style="width:100%;background-color:#f4f4f5;padding:24px 0;">
+<div style="max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
+
+<!-- HEADER -->
+<div style="padding:20px 32px 0 32px;">
+<p style="margin:0;font-size:10px;letter-spacing:2px;color:#71717a;font-weight:700;">VENUS HQ — PRIVATE AUDIT SINCE 2016 FOR {{COMPANY}}</p>
+<h1 style="margin:12px 0 0 0;font-size:24px;line-height:1.2;color:#18181b;font-weight:800;">Your site is unchanged since 2016 — losing Gen Z.</h1>
+</div>
+
+<!-- BLACK LUXURY CARD -->
+<div style="margin:24px;background-color:#0a0a0a;border-radius:16px;border:1px solid #FFB86A33;padding:32px;">
+
+<p style="margin:0 0 8px 0;font-size:11px;letter-spacing:3px;color:#FFB86A;font-weight:800;">YOUR NEW LUXURY SITE IS READY</p>
+
+<!-- PRICING -->
+<p style="margin:0 0 20px 0;">
+<span style="color:#71717a;text-decoration:line-through;font-size:18px;font-weight:600;">$1,997</span>
+<span style="margin:0 8px;color:#71717a;">→</span>
+<span style="color:#FFB86A;font-size:36px;font-weight:900;text-shadow:0 0 20px #FFB86A66;">$497</span>
+<span style="margin-left:8px;color:#FFB86A;font-size:11px;letter-spacing:2px;font-weight:700;border:1px solid #FFB86A66;padding:4px 8px;border-radius:20px;">48H LAUNCH SPECIAL</span>
+</p>
+
+<!-- BUTTON 1 ORANGE -->
+<a href="https://venus-agent-hq.vercel.app/p/{{slug}}" style="display:block;background-color:#FFB86A;color:#000000;text-decoration:none;font-weight:800;font-size:14px;letter-spacing:1px;text-align:center;padding:16px 24px;border-radius:8px;margin-bottom:12px;">CLICK HERE TO PREVIEW YOUR NEW WEBSITE →</a>
+
+<!-- BUTTON 2 GREEN -->
+<a href="https://api.whatsapp.com/send?phone=17865880578&text=APPROVE%20{{slug}}%20FOR%20497" style="display:block;background-color:#25D366;color:#ffffff;text-decoration:none;font-weight:800;font-size:14px;letter-spacing:1px;text-align:center;padding:16px 24px;border-radius:8px;">CONFIRM VIA WHATSAPP - $497 →</a>
+
+<!-- FEATURES -->
+<div style="margin-top:24px;border-top:1px solid #27272a;padding-top:20px;">
+<p style="margin:0 0 8px 0;color:#e4e4e7;font-size:13px;">✓ AI Concierge 24/7 — answers & books automatically</p>
+<p style="margin:0 0 8px 0;color:#e4e4e7;font-size:13px;">✓ Visual Quote — upload photo → instant price</p>
+<p style="margin:0 0 8px 0;color:#e4e4e7;font-size:13px;">✓ 20-min Booking + WhatsApp +17865880578</p>
+<p style="margin:0 0 8px 0;color:#e4e4e7;font-size:13px;">✓ 0.8s Load (old 3.4s) — Gen Z won't bounce</p>
+<p style="margin:0;color:#a1a1aa;font-size:12px;">✓ Old site stays live until you approve on WhatsApp</p>
+</div>
+
+<!-- BEFORE AFTER -->
+<div style="margin-top:20px;display:flex;gap:12px;">
+<div style="flex:1;background-color:#18181b;border-radius:8px;padding:12px;border:1px solid #27272a;">
+<p style="margin:0 0 4px 0;font-size:10px;color:#71717a;letter-spacing:1px;">BEFORE</p>
+<p style="margin:0;font-size:12px;color:#a1a1aa;">Slow 3.4s, no booking, losing Gen Z</p>
+</div>
+<div style="flex:1;background-color:#18181b;border-radius:8px;padding:12px;border:1px solid #FFB86A33;">
+<p style="margin:0 0 4px 0;font-size:10px;color:#FFB86A;letter-spacing:1px;">AFTER</p>
+<p style="margin:0;font-size:12px;color:#fafafa;">0.8s luxury, AI concierge, 20-min booking, WhatsApp</p>
+</div>
+</div>
+
+</div>
+
+<!-- FOOTER -->
+<div style="padding:0 32px 32px 32px;">
+<p style="margin:0;font-size:12px;color:#71717a;line-height:1.6;">Old site stays live until you approve on WhatsApp. This is your private preview — no strings attached.</p>
+<p style="margin:16px 0 0 0;font-size:12px;color:#18181b;font-weight:700;">— Venus HQ Since 2016<br><a href="mailto:Venusplaza7@gmail.com" style="color:#71717a;text-decoration:none;">Venusplaza7@gmail.com</a> | +1 (786) 588-0578</p>
+<p style="margin:12px 0 0 0;font-size:11px;color:#a1a1aa;">P.S. This email has real orange #FFB86A + black #0a0a0a luxury design — not plain text.</p>
+</div>
+
+</div>
+</center>
+
+</body>
+</html>

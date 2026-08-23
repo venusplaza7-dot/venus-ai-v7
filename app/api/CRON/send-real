@@ -1,0 +1,25 @@
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+import { NextResponse } from 'next/server'
+
+export async function GET(req) {
+  const BREVO_KEY = process.env.BREVO_API_KEY
+  const GROQ_KEY = process.env.GROQ_API_KEY
+  const SENDER = process.env.VENUS_SENDER_EMAIL || 've9us1@gmail.com'
+
+  if (!BREVO_KEY) {
+    return NextResponse.json({ error: 'BREVO_API_KEY missing', totalRealSent: 0 }, { status: 500 })
+  }
+
+  return NextResponse.json({
+    status: 'LIVE_CRAWL_ALLOWED',
+    policy: 'ALLOW_ALL',
+    brevo_key_present: true,
+    brevo_key_prefix: BREVO_KEY.substring(0,20)+'...',
+    groq_key_present: !!GROQ_KEY,
+    sender: SENDER,
+    totalRealSent: 0,
+    message: 'Ready to send 15/hr REAL - wire factory MX logic here'
+  })
+}
+export async function POST(req){ return GET(req) }

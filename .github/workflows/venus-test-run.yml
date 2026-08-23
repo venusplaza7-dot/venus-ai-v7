@@ -11,7 +11,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Send V8 Test
+      - name: Send V8 Test to Venus1
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
         run: |
@@ -19,19 +19,18 @@ jobs:
           (async () => {
             const client = 'Alliance Plumbing Houston';
             const preview = 'https://venus-ai-v8-git-main-venus13.vercel.app/preview?c=' + encodeURIComponent(client);
-            const html = '<div style=\"background:#000000;padding:32px 16px\"><div style=\"max-width:600px;margin:0 auto;background:#0a0a0a;border:1px solid #222222;padding:40px\"><p style=\"margin:0 0 24px 0;font-family:Arial,sans-serif;font-size:10px;letter-spacing:3px;color:#666666\">VENUS HQ — PRIVATE AUDIT FOR ' + client.toUpperCase() + '</p><h1 style=\"margin:0 0 24px 0;font-family:Georgia,serif;font-size:36px;font-weight:300;line-height:1.1;color:#ffffff\">Your site is unchanged since 2016 — losing Gen Z.</h1><p style=\"margin:0 0 32px 0;font-family:Arial,sans-serif;font-size:14px;line-height:1.8;color:#ffffff\">1. <span style=\"color:#888888\">Trust gap</span> — 2016 design<br>2. <span style=\"color:#888888\">Mobile UX</span> — fails Gen Z<br>3. <span style=\"color:#888888\">AI</span> — no instant quote</p><a href=\"' + preview + '\" style=\"display:block;background:#ffffff;color:#000000;text-align:center;padding:18px;text-decoration:none;font-family:Arial,sans-serif;font-size:12px;letter-spacing:2px\">VIEW PRIVATE PREVIEW →</a><p style=\"margin:24px 0 0 0;font-family:Arial,sans-serif;font-size:11px;color:#444444\">Reply VENUS for full site. — Ron V8</p></div></div>';
+            const html = '<div style=\"background:#000;padding:32px\"><div style=\"max-width:600px;margin:0 auto;background:#0a0a0a;border:1px solid #222;padding:40px\"><p style=\"color:#666;font-size:10px;letter-spacing:3px\">VENUS HQ FOR ' + client.toUpperCase() + '</p><h1 style=\"color:#fff;font-family:Georgia;font-size:32px;font-weight:300\">Your site is unchanged since 2016</h1><a href=\"' + preview + '\" style=\"display:block;background:#fff;color:#000;padding:18px;text-align:center;text-decoration:none;margin-top:20px\">VIEW PRIVATE PREVIEW →</a></div></div>';
             const res = await fetch('https://api.brevo.com/v3/smtp/email', {
               method: 'POST',
               headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                sender: { name: 'Ron - Venus HQ', email: 'ron@venushq7.com' },
-                to: [{ email: 'ron@venushq7.com' }],
-                subject: 'PRIVATE AUDIT FOR ' + client,
+                sender: { name: 'Ron Venus', email: 'ron@venushq7.com' },
+                to: [{ email: 'Venus1@gmail.com' }],
+                subject: 'V8 TEST ' + client,
                 htmlContent: html
               })
             });
-            const text = await res.text();
+            const t = await res.text();
             console.log('STATUS:', res.status);
-            console.log(text);
+            console.log(t);
           })();
-          "

@@ -7,11 +7,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Send V8 Test to Venus1
-        env:
+        with: { node-version: 20 }
+      - env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
         run: |
           cat > send.js << 'JS'
@@ -19,19 +16,17 @@ jobs:
             const client = 'Alliance Plumbing Houston';
             const preview = 'https://venus-ai-v8-git-main-venus13.vercel.app/preview?c=' + encodeURIComponent(client);
             const html = `<div style="background:#000;padding:32px"><div style="max-width:600px;margin:0 auto;background:#0a0a0a;border:1px solid #222;padding:40px"><p style="color:#666;font-size:10px;letter-spacing:3px">VENUS HQ FOR ${client.toUpperCase()}</p><h1 style="color:#fff;font-family:Georgia;font-size:32px;font-weight:300">Your site is unchanged since 2016</h1><a href="${preview}" style="display:block;background:#fff;color:#000;padding:18px;text-align:center;text-decoration:none;margin-top:20px">VIEW PRIVATE PREVIEW →</a></div></div>`;
-            const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+            const r = await fetch('https://api.brevo.com/v3/smtp/email', {
               method: 'POST',
               headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                sender: { name: 'Ron Venus', email: 'ron@venushq7.com' },
-                to: [{ email: 'Venus1@gmail.com' }],
-                subject: 'V8 TEST ' + client,
+                sender: { name: 'Ron Venus', email: 'Venus1@gmail.com' },
+                to: [{ email: 've9us1@gmail.com' }],
+                subject: 'V8 TEST - ' + client,
                 htmlContent: html
               })
             });
-            const t = await res.text();
-            console.log('STATUS:', res.status);
-            console.log(t);
+            console.log('STATUS', r.status, await r.text());
           })();
           JS
           node send.js

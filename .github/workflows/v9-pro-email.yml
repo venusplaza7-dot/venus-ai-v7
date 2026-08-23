@@ -1,0 +1,81 @@
+name: V9 Pro Email Sender
+on:
+  workflow_dispatch:
+    inputs:
+      business:
+        description: 'Business slug (e.g. alliance-plumbing-houston)'
+        required: true
+        default: 'houston-elite-plumber'
+      email:
+        description: 'Client email'
+        required: true
+
+jobs:
+  send-v9-pro:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Send V9 Professional Audit Email via Brevo
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          BUSINESS: ${{ inputs.business }}
+          CLIENT_EMAIL: ${{ inputs.email }}
+        run: |
+          cat > email.html <<EOF
+          <!DOCTYPE html>
+          <html>
+          <body style="margin:0;background:#FCFBF8;font-family:Inter,Arial,sans-serif;">
+            <div style="max-width:600px;margin:0 auto;background:white;border:1px solid #eee;">
+              <div style="background:black;color:white;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="letter-spacing:3px;font-size:11px;">VENUS HQ • LUXURY 2026</span>
+                <span style="font-size:10px;opacity:0.5;">PRIVATE AUDIT • CONFIDENTIAL</span>
+              </div>
+              <div style="padding:40px 32px;">
+                <div style="display:inline-block;border:1px solid #ddd;border-radius:20px;padding:6px 12px;font-size:10px;letter-spacing:2px;">BRAND AUDIT • 2026 • \${{ env.BUSINESS }}</div>
+                <h1 style="font-family:Georgia,serif;font-size:38px;line-height:0.95;margin-top:20px;font-weight:400;">Your current site<br>doesn't reflect<br><span style="color:#999;font-style:italic;">the quality</span><br>of your work.</h1>
+                <p style="color:#666;font-size:15px;line-height:1.6;margin-top:16px;">I audited <b>\${{ env.BUSINESS }}.com</b> — unchanged since 2018. You're delivering luxury on-site, but your online presence says 2018.</p>
+                <p style="color:#666;font-size:15px;">We rebuilt your entire presence — luxury, reliable, instant — no downtime, old site stays live until you approve.</p>
+                
+                <div style="background:#0F0F0F;border-radius:20px;padding:24px;margin-top:28px;color:white;">
+                  <div style="background:#FF6A2C;display:inline-block;padding:6px 12px;border-radius:20px;font-size:10px;font-weight:800;">LAUNCH SPECIAL • 48H APPROVAL • READY NOW</div>
+                  <h2 style="font-family:Georgia,serif;font-size:26px;margin:16px 0 0 0;">Your new luxury site is ready.</h2>
+                  <div style="margin-top:12px;"><span style="text-decoration:line-through;opacity:0.4;">\$1,997</span><span style="color:#FF6A2C;font-size:28px;margin-left:8px;font-weight:800;">\$497</span><span style="opacity:0.5;font-size:12px;"> one-time • 48h launch</span></div>
+                  <a href="https://venus-ai-v8-git-main-venus13.vercel.app/p/\${{ env.BUSINESS }}" style="display:block;background:#FF6A2C;color:white;text-align:center;padding:16px;border-radius:100px;text-decoration:none;font-weight:700;margin-top:20px;">VIEW PRIVATE PREVIEW → \${{ env.BUSINESS }}</a>
+                  <p style="font-size:10px;opacity:0.4;text-align:center;margin-top:8px;">Private link • Expires in 48h • Preview scrolls to beautiful site • WhatsApp includes tracking</p>
+                </div>
+
+                <div style="margin-top:24px;display:flex;gap:12px;">
+                  <div style="flex:1;background:#F9F9F9;border-radius:12px;padding:14px;"><div style="font-size:10px;opacity:0.5;">CURRENT</div><div style="font-weight:700;">Dated • Low-trust</div></div>
+                  <div style="flex:1;background:#0F0F0F;color:white;border-radius:12px;padding:14px;"><div style="font-size:10px;opacity:0.5;">AFTER VENUS</div><div style="font-weight:700;">Luxury • Instant Booking</div></div>
+                </div>
+
+                <p style="margin-top:32px;font-size:12px;color:#999;">This audit was generated privately for \${{ env.BUSINESS }}. Old site stays live. No risk. Activate once you approve via WhatsApp — we track \${{ env.BUSINESS }} automatically.</p>
+                <p style="font-size:12px;color:#999;margin-top:8px;">— Venus HQ<br>Luxury Websites in 24H<br>venus-ai-v8-git-main-venus13.vercel.app</p>
+              </div>
+              <div style="background:#F5F5F5;padding:12px 24px;text-align:center;font-size:10px;color:#999;letter-spacing:1px;">VENUS HQ • HOUSTON TX • PRIVATE AUDIT FOR \${{ env.BUSINESS }}</div>
+            </div>
+          </body>
+          </html>
+          EOF
+
+          # Send via Brevo API
+          curl -X POST https://api.brevo.com/v3/smtp/email \
+            -H "accept: application/json" \
+            -H "api-key: $BREVO_API_KEY" \
+            -H "content-type: application/json" \
+            -d "{
+              \"sender\": {\"name\": \"Venus HQ - Luxury Audit\", \"email\": \"audit@venus-hq.com\"},
+              \"to\": [{\"email\": \"$CLIENT_EMAIL\"}],
+              \"subject\": \"Private Audit: $BUSINESS.com — Your luxury site is ready (\$497) — Preview inside\",
+              \"htmlContent\": $(jq -Rs . < email.html),
+              \"tags\": [\"v9-pro\", \"$BUSINESS\"]
+            }"
+
+      - name: Log
+        run: echo "✅ V9 Pro email sent to ${{ inputs.email }} for ${{ inputs.business }} — Link: https://venus-ai-v8-git-main-venus13.vercel.app/p/${{ inputs.business }}"
+
+
+
+
+

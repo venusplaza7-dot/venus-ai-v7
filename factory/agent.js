@@ -1,49 +1,36 @@
 const fs=require('fs');
 const path=require('path');
-
-const files=fs.readdirSync(__dirname).filter(f=>f.endsWith('.json') && !f.includes('clients'));
-
-console.log(`AGENT PITCHING ${files.length} CLIENTS — OLD SITE 2016 ANGLE\n`);
-
+const files=fs.readdirSync(__dirname).filter(f=>f.endsWith('.json'));
+console.log(`AGENT PITCHING ${files.length} CLIENTS - REAL NICHE MODE`);
 files.forEach(f=>{
   const j=JSON.parse(fs.readFileSync(path.join(__dirname,f),'utf8'));
-  
-  const email=`Subject: ${j.businessName} — Your site is losing Gen Z customers (2016 design)
+  const niche=j.niche||'PLUMBING';
+  const businessName=j.businessName||'Client';
+  const oldSite=j.oldSite||j.domain||'site.com';
+  const est=j.est||'2016';
+  const realTitle=j.realTitle||oldSite;
+  const email=`Subject: ${businessName} — Your ${oldSite} looks ${est}, not 2026 — Private ${niche} Audit
 
-Hi ${j.businessName} team,
+Hi ${businessName} team,
 
-I checked ${j.oldSite} — it looks like it hasn't been updated since 2016.
+I checked ${oldSite} - Title: "${realTitle}"
 
-Your plumbing work is solid, but your site is costing you business:
+WHO WE ARE: Venus HQ — Houston's Luxury AI Studio.
+WHAT WE DO: Rebuild ${niche} sites with AI photo-quote, 20-min booking, Apple Pay, $497, 24h live.
 
-1. Gen Z (70% of Houston homeowners searching now) leaves in 3 seconds — your site is not mobile, not fast, no dark mode, no instant booking.
+WHAT WE FOUND ABOUT YOUR SITE ${oldSite}:
+- Old template from ${est} — no AI — slow mobile
+- No AI tool — in 2026 customers expect: "Fix my ${niche.toLowerCase()} — upload photo for instant price"
 
-2. No AI tool — in 2026 customers expect: "Fix my leak cost?" and get instant AI answer + booking. Your competitors with AI are stealing those leads at 2am while you're sleeping.
+WHY YOU NEED UPGRADE: ${businessName} trusted since ${est} but Gen-Z ${niche.toLowerCase()} homeowners don't call.
 
-3. Google ranks you lower because old site = slow, no SSL, no schema, no AI chat.
+I rebuilt a preview: ${j.preview || 'https://venus-ai-v8.vercel.app/p/'+j.slug}
 
-I rebuilt a preview for you (Gen Z + AI ready):
+It has: AI ${niche.toLowerCase()} assistant that quotes + books 24/7, Gen Z design, 3x faster than your ${est} site
 
-${j.preview || 'https://venus-ai-v8.vercel.app/p/'+f.replace('.json','')}
-
-It has:
-- AI plumber assistant that quotes + books 24/7
-- Gen Z design: video, one-tap call, Apple Pay
-- 3x faster than your 2016 site
-
-Want me to put it live on your domain this week? I can migrate everything in 48h. If you don't like it, you keep your old site.
-
-Worth a 10-min call?
-
-Ron — Venus AI
-venus-ai-v8.vercel.app
+Worth a 10-min call? Ron — Venus AI
 `;
-
-  fs.writeFileSync(path.join(__dirname,f.replace('.json','-EMAIL.txt')), email);
-  console.log(`PITCH READY for ${j.businessName} -> ${f.replace('.json','-EMAIL.txt')}`);
+  fs.writeFileSync(path.join(__dirname,f.replace('.json','-EMAIL.txt')),email);
+  console.log(`PITCH READY for ${businessName} - ${niche} - ${oldSite}`);
 });
-
-console.log('\nDONE — All emails say: OLD SITE 2016 + GEN Z + MISSING AI');
-
-
-
+console.log('\nDONE — All emails say: REAL WHO WE ARE / WHAT WE FOUND / WHY UPGRADE + correct niche');

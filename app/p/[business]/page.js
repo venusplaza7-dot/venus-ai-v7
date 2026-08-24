@@ -1,53 +1,64 @@
+import fs from 'fs';
+import path from 'path';
+export const dynamic='force-dynamic';
+
 export default function Page({ params }) {
-  const slug = params.business || params.slug || "houston-elite-plumber";
-  const domain = `${slug}.com`;
-  const whatsappHref = `https://wa.me/17865880578?text=APPROVE%20SITE%3A%20${slug}%0AURL%3A%20https%3A%2F%2Fvenus-ai-v8-git-main-venus13.vercel.app%2Flive%2F${slug}%0APLAN%3A%20497`;
+  const slug = params.business || params.slug || "houston-plumbing-pros";
+  let j = null;
+  try{
+    const fp = path.join(process.cwd(),'factory',`${slug}.json`);
+    if(fs.existsSync(fp)) j = JSON.parse(fs.readFileSync(fp,'utf8'));
+  }catch{}
+
+  const domain = j?.oldSite || j?.domain || `${slug}.com`;
+  const businessName = j?.businessName || slug.replace(/-/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+  const niche = j?.niche || (domain.includes('roof')? 'ROOFING' : domain.includes('electric')? 'ELECTRICAL' : 'PLUMBING');
+  const realTitle = j?.realTitle || `${businessName} - Houston ${niche}`;
+  const est = j?.est || '2015';
+  const audit = j?.audit || null;
+  const whatsappHref = `https://wa.me/17865880578?text=APPROVE SITE: ${slug} - ${businessName}`;
 
   return (
-    <div style={{background:"#FCFBF8",minHeight:"100vh",fontFamily:"Instrument Serif, Georgia, serif"}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&display=swap'); html{scroll-behavior:smooth}`}</style>
-      
-      <div style={{background:"black",color:"white",padding:"14px 32px",display:"flex",justifyContent:"space-between",fontFamily:"Inter",fontSize:11,letterSpacing:2}}>
-        <span>VENUS HQ — LUXURY 2026 • PRIVATE AUDIT FOR {slug.toUpperCase()}</span>
-        <span style={{opacity:0.5}}>● Live • Tracking Active</span>
+    <div style={{background:"#FCFBF8",minHeight:"100vh"}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');`}</style>
+      <div style={{background:"black",color:"white",padding:"12px 24px",display:"flex",justifyContent:"space-between",fontSize:11,letterSpacing:2}}>
+        <span>VENUS HQ — LUXURY 2026 • PRIVATE AUDIT FOR {niche} • REAL SCRAPE</span>
+        <span style={{opacity:0.5}}>• Live • Tracking {businessName}</span>
       </div>
-
-      <div style={{maxWidth:1240,margin:"0 auto",padding:"60px 32px",display:"grid",gridTemplateColumns:"1.2fr 0.8fr",gap:40}}>
-        <div>
-          <div style={{fontFamily:"Inter",fontSize:10,letterSpacing:2,border:"1px solid #ddd",display:"inline-block",padding:"6px 12px",borderRadius:20}}>BRAND AUDIT • {domain} • EST 2018 → 2026</div>
-          <h1 style={{fontSize:64,lineHeight:0.9,marginTop:24}}>HOUSTON ELITE<br/>LUXURY<br/><span style={{color:"#FF6A2C"}}>PLUMBER.</span></h1>
-          <p style={{fontFamily:"Inter",color:"#666",marginTop:20}}>We rebuilt <span style={{background:"#E8FF5A",padding:"2px 6px"}}>{domain}</span> — unchanged since 2018 — into Gen-Z luxury with AI. Ready in 24h.</p>
-          
-          <div style={{background:"black",color:"white",padding:16,marginTop:32,borderRadius:12,display:"flex",justifyContent:"space-between",fontFamily:"Inter",fontSize:12,alignItems:"center"}}>
-            <span>CURRENT — 2018 — LIVE NOW<br/><b>{domain} — Old Site</b></span>
-            <a href={`https://${domain}`} target="_blank" style={{background:"white",color:"black",padding:"10px 20px",borderRadius:8,textDecoration:"none",fontWeight:700}}>OPEN OLD</a>
+      <div style={{maxWidth:1240,margin:"0 auto",padding:"40px 24px"}}>
+        <div style={{display:"grid",gridTemplateColumns:"1.2fr 0.8fr",gap:32}}>
+          <div>
+            <div style={{fontFamily:"Inter",fontSize:11,letterSpacing:4,color:"#FF6A2C",fontWeight:800}}>WHO WE ARE</div>
+            <h1 style={{fontSize:64,lineHeight:0.9,margin:"12px 0 0 0",fontWeight:900}}>{businessName}<br/><span style={{color:"#888",fontSize:28}}>{niche} • Houston</span></h1>
+            <p style={{fontFamily:"Inter",color:"#666",marginTop:20,lineHeight:1.6}}>{audit?.whoWeAre || `Venus HQ — Houston's Luxury AI Studio. We turn 2018 contractor sites into Gen-Z luxury with 7-second AI concierge.`}</p>
+            <div style={{background:"black",color:"white",padding:"20px",borderRadius:16,marginTop:24}}>
+              <div style={{fontFamily:"Inter",fontSize:11,letterSpacing:2,color:"#FF6A2C"}}>WHAT WE DO</div>
+              <p style={{marginTop:8,lineHeight:1.6,fontSize:14}}>{audit?.whatWeDo || `We rebuild ${niche} sites with AI photo-quote, 20-min booking, Stripe $497, 24h go-live.`}</p>
+            </div>
+            <div style={{background:"#fff",border:"1px solid #eee",borderRadius:16,padding:20,marginTop:20}}>
+              <div style={{fontFamily:"Inter",fontSize:11,letterSpacing:2,fontWeight:800}}>WHAT WE FOUND ABOUT YOUR SITE</div>
+              <div style={{marginTop:12,background:"#fffbeb",padding:12,borderRadius:10,fontSize:12}}><b>Real Scrape:</b> {domain}<br/>Title="{realTitle}"<br/>Est {est} • Old WP • No AI • Slow mobile</div>
+              <p style={{marginTop:12,lineHeight:1.6,fontSize:13,color:"#333"}}>{audit?.whatWeFound || `AUDIT of ${domain}: Title="${realTitle}". Old template from ${est}, no AI, losing Gen-Z ${niche} leads.`}</p>
+            </div>
+          </div>
+          <div style={{background:"black",borderRadius:32,padding:24,color:"white"}}>
+            <div style={{background:"#FF6A2C",display:"inline-block",padding:"6px 12px",borderRadius:20,fontSize:11,letterSpacing:2,fontWeight:800}}>WHY YOU NEED UPGRADE</div>
+            <h2 style={{fontSize:32,marginTop:20,lineHeight:1.1}}>Your new luxury {niche} site — Gen Z + AI ready</h2>
+            <p style={{fontFamily:"Inter",fontSize:12,opacity:0.7,marginTop:12,lineHeight:1.6}}>{audit?.whyUpgrade || `${businessName} trusted since ${est} but site looks ${est}. Gen-Z ${niche} homeowners don't call — they upload photo for instant price.`}</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginTop:24}}>
+              <a href={`#preview-${slug}`} style={{background:"white",color:"black",padding:"14px",borderRadius:100,textAlign:"center",fontWeight:800,textDecoration:"none",fontSize:13}}>See Audit ↓</a>
+              <a href={whatsappHref} target="_blank" style={{background:"#FF6A2C",color:"black",padding:"14px",borderRadius:100,textAlign:"center",fontWeight:800,textDecoration:"none",fontSize:13}}>Approve $497</a>
+            </div>
           </div>
         </div>
-
-        <div style={{background:"black",borderRadius:32,padding:32,color:"white"}}>
-          <div style={{background:"#FF6A2C",display:"inline-block",padding:"8px 16px",borderRadius:20,fontFamily:"Inter",fontSize:10,fontWeight:800}}>LAUNCH SPECIAL • 48H APPROVAL</div>
-          <h2 style={{fontSize:32,marginTop:20}}>Your new luxury site<br/><span style={{opacity:0.5}}>is ready.</span></h2>
-          <div style={{marginTop:16}}><span style={{textDecoration:"line-through",opacity:0.4}}>$1,997</span><span style={{color:"#FF6A2C",fontSize:38,marginLeft:10}}>$497</span></div>
-          <p style={{fontFamily:"Inter",fontSize:12,opacity:0.5,marginTop:8}}>One-time • 48h launch • Old stays live • Tracking: {slug}</p>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:20}}>
-            <a href={`#preview-${slug}`} style={{background:"#FF6A2C",color:"white",textAlign:"center",padding:14,borderRadius:100,textDecoration:"none",fontFamily:"Inter",fontWeight:700,fontSize:12}}>VIEW PREVIEW →</a>
-            <a href={whatsappHref} target="_blank" style={{background:"white",color:"black",textAlign:"center",padding:14,borderRadius:100,textDecoration:"none",fontFamily:"Inter",fontWeight:700,fontSize:12}}>CONFIRM - $497</a>
-          </div>
-        </div>
       </div>
-
-      <div id={`preview-${slug}`} style={{background:"black",color:"white",padding:"80px 40px",textAlign:"center"}}>
-        <p style={{color:"#FF6A2C",fontFamily:"Inter",letterSpacing:4,fontSize:10}}>PREVIEW — BEAUTIFUL LUXURY SITE — SCROLLS FROM TOP BUTTON</p>
-        <h1 style={{fontSize:64,marginTop:20}}>Plumbing<br/><span style={{color:"#FF6A2C"}}>Reimagined.</span></h1>
-        <p style={{fontFamily:"Inter",color:"#888",maxWidth:500,margin:"20px auto"}}>AI Concierge answers in 7 seconds. Upload photo, get price. Book in 20 min.</p>
-        <div style={{maxWidth:480,margin:"60px auto 0 auto",background:"#111",border:"1px solid #222",borderRadius:20,padding:28}}>
-          <div><span style={{textDecoration:"line-through",opacity:0.3}}>$1,997</span><span style={{color:"#FF6A2C",fontSize:40,fontWeight:900,marginLeft:12}}>$497</span></div>
-          <a href={whatsappHref} target="_blank" style={{display:"block",background:"#2E7D4F",color:"white",textDecoration:"none",fontWeight:900,textAlign:"center",padding:16,borderRadius:12,marginTop:20,fontFamily:"Inter"}}>✓ CONFIRM VIA WHATSAPP - $497 → {slug}</a>
-          <p style={{fontFamily:"Inter",fontSize:10,opacity:0.3,marginTop:8}}>WhatsApp includes {slug} + live link so you know which to activate once paid</p>
+      <div id={`preview-${slug}`} style={{background:"black",color:"white",padding:"80px 24px",marginTop:40}}>
+        <p style={{color:"#FF6A2C",fontFamily:"Inter",letterSpacing:4,fontSize:11,textAlign:"center"}}>PREVIEW — {niche} LUXURY 2026</p>
+        <h1 style={{fontSize:64,marginTop:20,textAlign:"center"}}>{niche}<br/>Elite • AI Concierge</h1>
+        <div style={{maxWidth:480,margin:"60px auto 0 auto",textAlign:"center"}}>
+          <a href={whatsappHref} target="_blank" style={{background:"white",color:"black",display:"inline-block",marginTop:20,padding:"16px 32px",borderRadius:100,fontWeight:900,textDecoration:"none"}}>APPROVE SITE: {slug} — $497</a>
         </div>
       </div>
     </div>
-  )
+  );
 }
-
-

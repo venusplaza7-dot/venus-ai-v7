@@ -1,1 +1,15 @@
+{
+  "crons": [
+    {
+      "path": "/api/real",
+      "schedule": "*/5 * * * *"
+    }
+  ],
+  "functions": {
+    "app/api/real/route.js": {
+      "maxDuration": 60
+    }
+  }
+}
+
 

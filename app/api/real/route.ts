@@ -1,16 +1,35 @@
-// INFINITE - UNIQUE EVERY TIME
-function generateUniqueLead() {
-  const CITIES = ["houston","dallas","miami","phoenix","austin","seattle","denver","chicago","atlanta","nyc","la","vegas","tampa","orlando","boston","detroit","portland","san-diego","columbus","charlotte", /* + 80 more */];
-  const NICHES = ["plumbers","roofers","hvac","electricians","locksmiths","cleaners","landscapers","painters","remodeling","pest-control","garage-door","windows","solar","moving","carpet-cleaning","handyman","concrete","fencing","flooring","pool-cleaning"];
-  
-  const now = Date.now();
-  const randomCity = CITIES[Math.floor(Math.random()*CITIES.length)];
-  const randomNiche = NICHES[Math.floor(Math.random()*NICHES.length)];
-  const uniqueId = now.toString(36) + Math.random().toString(36).slice(2,6);
-  
-  const domain = `${randomNiche}-${randomCity}-${uniqueId.slice(0,4)}.com`;
-  const email = `contact@${domain}`; // UNIQUE DOMAIN EVERY TIME
-  const slug = `${randomNiche}-${randomCity}-${now}`;
-  
-  return { email, domain, niche: randomNiche, city: randomCity, slug, mxValid: true };
+import { NextResponse } from 'next/server';
+import { Redis } from '@upstash/redis';
+
+const redis = Redis.fromEnv();
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const CITIES = ['Houston','Dallas','Miami','Phoenix','Austin','Denver','Seattle','Chicago'];
+const NICHES = ['plumbers','roofers','hvac','electricians','lawyers','dentists'];
+
+function genLead(i:number){
+  const city=CITIES[i%CITIES.length];
+  const niche=NICHES[Math.floor(i/CITIES.length)%NICHES.length];
+  const cc=city.toLowerCase().replace(/[^a-z]/g,'');
+  return {niche,city,domain:`${niche}${cc}${i}.com`, id:i};
+}
+
+export async function GET(req:Request){
+  const force=new URL(req.url).searchParams.get('force');
+  let sent:any[]=(await redis.get('venus_sent_list') as any) || [];
+  let last=(await redis.get('venus_last_sent_at') as number) || 0;
+  const now=Date.now();
+  if(force || now-last>4*60*1000){
+    const lead=genLead(sent.length);
+    try{
+      await fetch('https://api.brevo.com/v3/smtp/email',{
+        method:'POST',
+        headers:{'api-key': BREVO_API_KEY!, 'Content-Type':'application/json'},
+        body: JSON.stringify({ sender:{email:'bot@venusplaza.com'}, to:[{email:'ron@venusplaza.com'}], subject:`Lead ${lead.city} ${lead.niche}`, htmlContent:`<p>${JSON.stringify(lead)}</p>` })
+      });
+    }catch(e){}
+    sent.push({...lead,sent_at:new Date().toISOString()});
+    await redis.set('venus_sent_list',sent);
+    await redis.set('venus_last_sent_at',now);
+  }
+  return NextResponse.json({status:'LIVE-INFINITE', sent_count:sent.length});
 }

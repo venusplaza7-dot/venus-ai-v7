@@ -1,7 +1,7 @@
 name: v8-15-per-hour
 on:
   schedule:
-        - cron: '*/4 * * * *'
+    - cron: '*/4 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -11,29 +11,29 @@ jobs:
   send:
     runs-on: ubuntu-latest
     steps:
-            - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-            - name: Generate INFINITE route.ts
+      - name: Generate INFINITE route.ts
         run: |
           cat > app/api/real/route.ts <<'ROUTE_EOF'
           import { NextResponse } from 'next/server';
           import { Redis } from '@upstash/redis';
-          
+
           const redis = Redis.fromEnv();
           const BREVO_API_KEY = process.env.BREVO_API_KEY;
           const CITIES = ['Houston','Dallas','Miami','Phoenix','Austin','Denver','Seattle','Chicago'];
           const NICHES = ['plumbers','roofers','hvac','electricians','lawyers','dentists'];
-          
+
           function genLead(i:number){
             const city=CITIES[i%CITIES.length];
             const niche=NICHES[Math.floor(i/CITIES.length)%NICHES.length];
             const cc=city.toLowerCase().replace(/[^a-z]/g,'');
             return {niche,city,domain:`${niche}${cc}${i}.com`, id:i};
           }
-          
+
           export async function GET(req:Request){
             const force=new URL(req.url).searchParams.get('force');
-            let sent:any[]=(await redis.get('venus_sent_list')) as any || [];
+            let sent:any[]=(await redis.get('venus_sent_list') as any) || [];
             let last=(await redis.get('venus_last_sent_at') as number) || 0;
             const now=Date.now();
             if(force || now-last>4*60*1000){
@@ -53,7 +53,7 @@ jobs:
           }
           ROUTE_EOF
 
-            - name: Commit and deploy
+      - name: Commit and deploy
         run: |
           git config user.name "venus-bot"
           git config user.email "bot@venusplaza.com"

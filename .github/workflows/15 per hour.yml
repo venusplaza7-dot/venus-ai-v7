@@ -1,16 +1,12 @@
-name: v8-15-per-hour
-
+name: 15-per-hour
 on:
   schedule:
-    - cron: "*/4 * * * *" # every 4 min = 15 per hour
-  workflow_dispatch: # manual run button
-
+    - cron: '*/4 * * * *'
+  workflow_dispatch:
 jobs:
   send:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger autonomous lead email
-        run: |
-          curl -X GET "https://venus-ai-v8.vercel.app/api/real" -H "Cache-Control: no-cache" -v
-          echo "Sent 1 autonomous email - next in 4 min"
-
+      - run: |
+          curl -s "https://venus-ai-v8.vercel.app/api/cron/auto?key=venus13" 
+          curl -s "https://venus-ai-v8.vercel.app/api/real?force=true"

@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 import dns from 'dns/promises'
-
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs' // important for dns
+export const runtime = 'nodejs'
 
 async function scrapeHoustonPlumbers(count: number): Promise<string[]> {
   try {
@@ -25,20 +24,15 @@ async function scrapeHoustonPlumbers(count: number): Promise<string[]> {
 
 function extractYears(html: string): number[] {
   const re = /(?:©|&copy;|Copyright)[^\d]{0,20}(20\d{2})/gi
-  const all = Array.from(html.matchAll(re)) // FIXED: Array.from not spread
+  const all = Array.from(html.matchAll(re))
   return all.map((m:any)=>parseInt(m[1])).filter((y:number)=> y>=2015 && y<=2020)
 }
-
 function extractEmail(html: string, site: string): string {
   const re = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi
-  const all = Array.from(html.matchAll(re)).map((m:any)=>m[0].toLowerCase()) // FIXED
-  const legit = all.find((e:string) =>!e.includes('wix') &&!e.includes('example') &&!e.includes('gmail.com') &&!e.includes('yahoo.com'))
+  const all = Array.from(html.matchAll(re)).map((m:any)=>m[0].toLowerCase())
+  const legit = all.find((e:string) =>!e.includes('wix') &&!e.includes('example') &&!e.includes('sentry') &&!e.includes('gmail.com') &&!e.includes('yahoo.com'))
   if(legit) return legit
   return `info@${new URL(site).hostname.replace('www.','')}`
-}
-
-async function hasMX(domain: string): Promise<boolean> {
-  try { const mx = await dns.resolveMx(domain); return mx.length > 0 } catch { return false }
 }
 
 export async function GET(req: Request){
@@ -49,6 +43,10 @@ export async function GET(req: Request){
   }
   sites = Array.from(new Set(sites)).slice(0,count)
 
+  if(!process.env.GMAIL_USER ||!process.env.GMAIL_APP_PASS){
+    return NextResponse.json({ error: "MISSING ENV", need: ["GMAIL_USER","GMAIL_APP_PASS"], found: sites.length })
+  }
+
   const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASS } })
 
   let found = sites.length, outdatedSince2015 = 0, sent = 0, details:any[] = []
@@ -57,27 +55,41 @@ export async function GET(req: Request){
     try{
       let html = ""
       const r1 = await fetch(site, { headers:{'User-Agent':'Mozilla/5.0'}, signal: AbortSignal.timeout(8000) })
+      if(!r1.ok) continue
       html = await r1.text()
-      try{ const r2 = await fetch(site.replace(/\/$/,'')+'/contact', { headers:{'User-Agent':'Mozilla/5.0'}, signal: AbortSignal.timeout(5000) }); html += " " + await r2.text() }catch{}
+      try{ const r2 = await fetch(site.replace(/\/$/,'')+'/contact', { headers:{'User-Agent':'Mozilla/5.0'}, signal: AbortSignal.timeout(5000) }); if(r2.ok) html += " " + await r2.text() }catch{}
 
       const years = extractYears(html)
       if(years.length === 0) continue
       outdatedSince2015++
+
       let targetEmail = extractEmail(html, site)
       if(targetEmail.includes('ve9us1')) targetEmail = `info@${new URL(site).hostname.replace('www.','')}`
 
-      const domain = new URL(site).hostname.replace('www.','')
-      if(!(await hasMX(domain))){ details.push({site, year: years[0], email: targetEmail, skipped: "no MX"}); continue }
+      // PING BEFORE PROPOSAL - NON-BLOCKING NOW
+      let mxOk = true
+      let mxError = ""
+      try{
+        const mx = await dns.resolveMx(new URL(site).hostname.replace('www.',''))
+        mxOk = mx.length > 0
+      }catch(e:any){ mxOk = true; mxError = e.message } // <-- Don't block if DNS fails on Vercel
 
-      await transporter.sendMail({
-        from: process.env.GMAIL_USER,
-        to: targetEmail,
-        subject: `Your site shows © ${years[0]} - needs update since 2015-2020`,
-        html: `<p>Hi,<br>I saw ${site} shows <b>© ${years[0]}</b>. Since 2015-2020, it's outdated.<br><br>We rebuild Houston plumber sites. Want a 30-sec preview?<br><br>Venus Agent HQ</p>`
-      })
-      sent++
-      details.push({site, copyrightYear: years[0], email: targetEmail, range: "2015-2020", mx: true})
-    }catch{}
+      // SEND
+      try{
+        await transporter.sendMail({
+          from: process.env.GMAIL_USER,
+          to: targetEmail,
+          subject: `Your site shows © ${years[0]} - needs update since 2015-2020`,
+          html: `<p>Hi,<br>I saw ${site} shows <b>© ${years[0]}</b>. Since 2015-2020, it's outdated.<br><br>We rebuild Houston plumber sites. Want a 30-sec preview?<br><br>Venus Agent HQ</p>`
+        })
+        sent++
+        details.push({site, copyrightYear: years[0], email: targetEmail, range: "2015-2020", mx: mxOk, mxError, status: "sent"})
+      }catch(mailErr:any){
+        details.push({site, copyrightYear: years[0], email: targetEmail, error: mailErr.message, status: "mail_failed"})
+      }
+    }catch(e:any){
+      details.push({site, error: e.message, status: "fetch_failed"})
+    }
   }
-  return NextResponse.json({ project: "Venus Agent HQ v2 - Single File Fixed", found, outdatedSince2015, outdatedRange: "2015-2020 only", sent, details })
+  return NextResponse.json({ project: "Venus Agent HQ v2 - Fixed MX", found, outdatedSince2015, outdatedRange: "2015-2020 only", sent, details })
 }

@@ -1,4 +1,6 @@
 name: v8-15-per-hour
+permissions:
+  contents: write
 on:
   schedule:
     - cron: '*/4 * * * *'

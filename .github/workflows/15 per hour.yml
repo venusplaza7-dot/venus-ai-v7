@@ -4,9 +4,13 @@ on:
     - cron: '*/4 * * * *'
   workflow_dispatch:
 jobs:
-  send:
+  send-real:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          curl -s "https://venus-ai-v8.vercel.app/api/cron/auto?key=venus13" 
-          curl -s "https://venus-ai-v8.vercel.app/api/real?force=true"
+      - name: Send 1 real luxury lead
+        run: |
+          echo "Calling venus-ai-v8..."
+          curl -L -s "https://venus-ai-v8.vercel.app/api/real?force=true" | tee out.json
+          cat out.json
+          curl -L -s "https://venus-ai-v8.vercel.app/api/cron/auto?key=venus13" | tee auto.json
+          cat auto.json

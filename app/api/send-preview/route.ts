@@ -30,7 +30,7 @@ export async function GET() {
     method: 'POST',
     headers: { 'api-key': KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      sender: { email: 'ron@venushq7.com', name: 'Venus HQ' },
+      sender: { email: 'venusailux@gmail.com', name: 'Venus HQ' },
       to: [{ email: 've9us1@gmail.com' }],
       subject: 'Preview - Your new website is ready - 24hrplumbinghouston.com',
       htmlContent: html

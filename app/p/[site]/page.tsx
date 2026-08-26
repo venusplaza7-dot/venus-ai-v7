@@ -1,121 +1,124 @@
-export default function Page({ params }: { params: { site: string } }) {
+export default function Page({ params, searchParams }: { params: { site: string }, searchParams?: { cat?: string } }) {
   const site = params.site || "24hrplumbinghouston-com"
   const displaySite = site.replace("-com", ".com").replace(/-/g, "")
-  const isHouston = site.includes("houston")
-  
+
+  // Detect category from URL or?cat= param
+  const catParam = (searchParams?.cat || "").toLowerCase()
+  const siteLower = site.toLowerCase()
+  let category = "plumbers"
+  if (catParam) category = catParam
+  else if (siteLower.includes("roof")) category = "roofers"
+  else if (siteLower.includes("hvac") || siteLower.includes("ac") || siteLower.includes("air")) category = "hvac"
+  else if (siteLower.includes("electr")) category = "electricians"
+  else if (siteLower.includes("dent")) category = "dentists"
+  else if (siteLower.includes("lock")) category = "locksmiths"
+
+  const TEMPLATES: any = {
+    plumbers: {
+      label: "PLUMBING",
+      headline: ["Houston's", "Most", "Trusted", "PLUMBING"],
+      stat: "73% of Gen-Z renters will NOT make a phone call",
+      agent1: "Dispatch Agent - 3 Second Responder - stops missed after-hours burst pipes",
+      loss: "62% more qualified leaks, 0 missed calls",
+      color: "#C9A86A"
+    },
+    roofers: {
+      label: "ROOFING",
+      headline: ["Dallas's", "Most", "Trusted", "ROOFING"],
+      stat: "67% homeowners want drone roof estimate in 3 seconds - you only have Call Now",
+      agent1: "Dispatch Agent - 3 Second Responder - qualifies leak vs full replacement from photo",
+      loss: "48% more qualified roof jobs, 0 missed storm calls",
+      color: "#B85C38"
+    },
+    hvac: {
+      label: "HVAC",
+      headline: ["Houston's", "Most", "Trusted", "HVAC"],
+      stat: "85% want instant AC repair cost at 2am - your site from 2012 loses them",
+      agent1: "Dispatch Agent - 3 Second Responder - qualifies no-cool vs Freon leak instantly",
+      loss: "55% more after-hours AC jobs booked",
+      color: "#4A9FD4"
+    },
+    electricians: {
+      label: "ELECTRICAL",
+      headline: ["Houston's", "Most", "Trusted", "ELECTRICIANS"],
+      stat: "91% won't touch sparking panel - they text photo first, you have no text option",
+      agent1: "Dispatch Agent - 3 Second Responder - triages sparking vs outage from photo",
+      loss: "Stops free trips for tripped breakers",
+      color: "#FFC300"
+    },
+    dentists: {
+      label: "DENTAL",
+      headline: ["Your City's", "Most", "Trusted", "DENTAL"],
+      stat: "73% under 35 won't call for appointment - they want WhatsApp booking",
+      agent1: "Dispatch Agent - 3 Second Responder - books cleaning vs emergency from text",
+      loss: "32% more bookings, 0 front-desk overload",
+      color: "#6BCB77"
+    },
+    locksmiths: {
+      label: "LOCKSMITH",
+      headline: ["Your City's", "Most", "Trusted", "LOCKSMITH"],
+      stat: "94% locked out search at night - you lose if you don't answer in 3 seconds",
+      agent1: "Dispatch Agent - 3 Second Responder - qualifies car vs house lockout + location",
+      loss: "70% more night lockouts captured",
+      color: "#A0A0A0"
+    }
+  }
+
+  const t = TEMPLATES[category] || TEMPLATES.plumbers
+
   return (
     <div style={{ margin: 0, background: "#050505", color: "#fff", fontFamily: "Arial, sans-serif" }}>
-      
-      {/* TOP BAR */}
       <div style={{ background: "#000", borderBottom: "1px solid #1a1a1a", padding: "12px 20px", display: "flex", justifyContent: "space-between", fontSize: "10px", letterSpacing: "2px", color: "#666" }}>
-        <span>VENUS HQ - ${"1999"} TO $497 - 23H 35M</span>
-        <span style={{ color: "#C9A86A" }}>{displaySite.toUpperCase()}</span>
+        <span>VENUS HQ - ${"1999"} TO $497 - {t.label} 2026</span>
+        <span style={{ color: t.color }}>{displaySite.toUpperCase()} - {category.toUpperCase()}</span>
       </div>
 
-      {/* HERO */}
-      <div style={{ background: "#080808", padding: "48px 24px", textAlign: "left", maxWidth: "900px", margin: "0 auto" }}>
+      <div style={{ background: "#080808", padding: "48px 24px", maxWidth: "900px", margin: "0 auto" }}>
         <h1 style={{ fontFamily: "Georgia, serif", fontSize: "48px", lineHeight: "0.95", margin: 0, fontWeight: 900 }}>
-          <span style={{ color: "#fff" }}>Houston's</span><br />
-          <span style={{ color: "#fff" }}>Most</span><br />
-          <span style={{ color: "#888" }}>Trusted</span><br />
-          <span style={{ color: "#888" }}>PLUMBING</span><br />
-          <span style={{ color: "#C9A86A", fontStyle: "italic", fontWeight: 400 }}>Gen-Z<br />Luxury 2026</span>
+          {t.headline.map((line: string, i: number) => (
+            <span key={i} style={{ display: "block", color: i >= 2? "#888" : "#fff", fontStyle: i === 3? "italic" as any : "normal", fontWeight: i === 3? 400 : 900, color: i === 3? t.color : (i >= 2? "#888" : "#fff") }}>{line}</span>
+          ))}
         </h1>
+        <p style={{ color: "#666", marginTop: "16px", fontSize: "13px" }}>{t.stat}</p>
 
         <div style={{ marginTop: "32px", display: "grid", gap: "12px", maxWidth: "380px" }}>
-          <div style={{ background: "#fff", color: "#000", padding: "16px 20px", borderRadius: "999px", fontWeight: 900, fontSize: "14px", textAlign: "center" }}>
-            Dispatch Agent - PLUMBING
-          </div>
-          <div style={{ background: "#1a1a1a", border: "1px solid #222", color: "#888", padding: "16px 20px", borderRadius: "999px", fontSize: "14px", textAlign: "center" }}>
-            Photo-Diagnostics - instant quote
-          </div>
-          <div style={{ background: "#1a1a1a", border: "1px solid #222", color: "#888", padding: "16px 20px", borderRadius: "999px", fontSize: "14px", textAlign: "center" }}>
-            Quote and Closer - auto book
-          </div>
+          <div style={{ background: "#fff", color: "#000", padding: "16px 20px", borderRadius: "999px", fontWeight: 900, fontSize: "14px", textAlign: "center" }}>{t.agent1}</div>
+          <div style={{ background: "#1a1a1a", border: "1px solid #222", color: "#888", padding: "16px 20px", borderRadius: "999px", fontSize: "14px", textAlign: "center" }}>Photo-Diagnostics - instant quote from photo</div>
+          <div style={{ background: "#1a1a1a", border: "1px solid #222", color: "#888", padding: "16px 20px", borderRadius: "999px", fontSize: "14px", textAlign: "center" }}>Quote and Closer - auto book + $49 deposit</div>
         </div>
       </div>
 
-      {/* AI TOOLS WE WILL IMPLEMENT - NEW CLEAR SECTION */}
       <div style={{ background: "#0a0a0a", borderTop: "1px solid #1a1a1a", padding: "48px 24px" }}>
         <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-          <div style={{ fontSize: "10px", letterSpacing: "4px", color: "#C9A86A", fontWeight: 900 }}>WHAT WE INSTALL - 4 DEDICATED AI AGENTS FOR YOUR SITE</div>
-          <h2 style={{ fontFamily: "Georgia, serif", fontSize: "32px", color: "#fff", margin: "12px 0 8px 0", lineHeight: 1.1 }}>
-            Your site will not be a website.<br />
-            <span style={{ color: "#888" }}>It will be 4 employees that never sleep.</span>
-          </h2>
-          <p style={{ color: "#666", fontSize: "13px", marginBottom: "24px" }}>We dedicate these 4 AI agents only to {displaySite}. They work 24/7, speak English + Spanish, and log everything to your phone.</p>
+          <div style={{ fontSize: "10px", letterSpacing: "4px", color: t.color, fontWeight: 900 }}>WHAT WE INSTALL - 4 DEDICATED AI AGENTS FOR {t.label}</div>
+          <h2 style={{ fontFamily: "Georgia, serif", fontSize: "28px", color: "#fff", margin: "12px 0 8px 0" }}>Your site will not be a website.<br /><span style={{ color: "#888" }}>It will be 4 employees that never sleep.</span></h2>
 
-          <div style={{ display: "grid", gap: "16px" }}>
-            
-            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "16px", padding: "20px", display: "flex", gap: "16px" }}>
-              <div style={{ minWidth: "48px", height: "48px", background: "#fff", color: "#000", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "20px" }}>1</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ color: "#fff", fontWeight: 900, fontSize: "15px" }}>DISPATCH AGENT - 3 Second Responder</div>
-                <div style={{ color: "#C9A86A", fontSize: "11px", letterSpacing: "1px", marginTop: "4px" }}>DEDICATED TO YOUR SITE 24/7</div>
-                <div style={{ color: "#aaa", fontSize: "13px", lineHeight: 1.6, marginTop: "10px" }}>
-                  <b style={{ color: "#fff" }}>What it does:</b> Answers every lead in 3 seconds via text + call. Asks 4 questions: Zip? Emergency? Photo? Owner or renter? Qualifies emergency vs routine, blocks spam.<br />
-                  <b style={{ color: "#fff" }}>Tool used:</b> Twilio + GPT-4o + Google Sheet (your jobs)<br />
-                  <b style={{ color: "#fff" }}>Result for you:</b> You stop losing after-hours jobs. 62% more qualified leads, 0 missed calls.
-                </div>
-              </div>
+          <div style={{ display: "grid", gap: "16px", marginTop: "24px" }}>
+            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "16px", padding: "20px" }}>
+              <b style={{ color: "#fff" }}>1. DISPATCH AGENT</b><div style={{ color: t.color, fontSize: "11px" }}>DEDICATED 24/7 TO {displaySite}</div>
+              <div style={{ color: "#aaa", fontSize: "13px", marginTop: "8px" }}>Answers every lead in 3 sec via text + call. Qualifies emergency vs routine. <b style={{ color: "#fff" }}>{t.loss}</b></div>
             </div>
-
-            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "16px", padding: "20px", display: "flex", gap: "16px" }}>
-              <div style={{ minWidth: "48px", height: "48px", background: "#C9A86A", color: "#000", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "20px" }}>2</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ color: "#fff", fontWeight: 900, fontSize: "15px" }}>PHOTO-DIAGNOSTICS AGENT - Instant Quote</div>
-                <div style={{ color: "#C9A86A", fontSize: "11px", letterSpacing: "1px", marginTop: "4px" }}>STOPS FREE TRIPS - YOUR BIGGEST LOSS</div>
-                <div style={{ color: "#aaa", fontSize: "13px", lineHeight: 1.6, marginTop: "10px" }}>
-                  <b style={{ color: "#fff" }}>What it does:</b> Customer uploads photo of leak or burst pipe. Vision AI identifies issue (slab leak, water heater, drain) and gives price RANGE instantly: "$149-$290 + Licensed plumber confirms on arrival".<br />
-                  <b style={{ color: "#fff" }}>Tool used:</b> Vision AI + your price book + instant SMS with your logo<br />
-                  <b style={{ color: "#fff" }}>Result for you:</b> No more free estimates driving across Houston. Only serious jobs book. Saves 8 hrs/week.
-                </div>
-              </div>
+            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "16px", padding: "20px" }}>
+              <b style={{ color: "#fff" }}>2. PHOTO-DIAGNOSTICS</b><div style={{ color: t.color, fontSize: "11px" }}>STOPS FREE TRIPS</div>
+              <div style={{ color: "#aaa", fontSize: "13px", marginTop: "8px" }}>Customer uploads photo. Vision AI gives price RANGE instantly with your logo. Only serious jobs book.</div>
             </div>
-
-            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "16px", padding: "20px", display: "flex", gap: "16px" }}>
-              <div style={{ minWidth: "48px", height: "48px", background: "#fff", color: "#000", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "20px" }}>3</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ color: "#fff", fontWeight: 900, fontSize: "15px" }}>QUOTE and CLOSER AGENT - Auto Books</div>
-                <div style={{ color: "#C9A86A", fontSize: "11px", letterSpacing: "1px", marginTop: "4px" }}>CLOSES WHILE YOU WORK ON JOBS</div>
-                <div style={{ color: "#aaa", fontSize: "13px", lineHeight: 1.6, marginTop: "10px" }}>
-                  <b style={{ color: "#fff" }}>What it does:</b> Sends branded quote PDF with your license number, warranty, 5-star reviews, then auto-offers 3 time slots. Customer taps to book. Adds to your calendar + sends WhatsApp confirmation.<br />
-                  <b style={{ color: "#fff" }}>Tool used:</b> Calendly + Stripe $49 deposit + WhatsApp API<br />
-                  <b style={{ color: "#fff" }}>Result for you:</b> 2.3x more bookings. You wake up to booked jobs, not voicemails.
-                </div>
-              </div>
+            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "16px", padding: "20px" }}>
+              <b style={{ color: "#fff" }}>3. QUOTE + CLOSER</b><div style={{ color: t.color, fontSize: "11px" }}>AUTO BOOKS WHILE YOU WORK</div>
+              <div style={{ color: "#aaa", fontSize: "13px", marginTop: "8px" }}>Sends branded PDF + 3 time slots. Customer taps to book + $49 deposit via Stripe.</div>
             </div>
-
-            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "16px", padding: "20px", display: "flex", gap: "16px" }}>
-              <div style={{ minWidth: "48px", height: "48px", background: "#25D366", color: "#fff", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "20px" }}>4</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ color: "#fff", fontWeight: 900, fontSize: "15px" }}>REVIEW and RANK AGENT - Number 1 in Houston</div>
-                <div style={{ color: "#C9A86A", fontSize: "11px", letterSpacing: "1px", marginTop: "4px" }}>GETS 5-STAR REVIEWS ON AUTOPILOT</div>
-                <div style={{ color: "#aaa", fontSize: "13px", lineHeight: 1.6, marginTop: "10px" }}>
-                  <b style={{ color: "#fff" }}>What it does:</b> After job marked done, auto-texts customer: "How was our service?" If 4-5 stars, pushes to Google. If 1-3 stars, routes to you privately, not public.<br />
-                  <b style={{ color: "#fff" }}>Tool used:</b> Google Business API + sentiment AI<br />
-                  <b style={{ color: "#fff" }}>Result for you:</b> From 34 reviews to 200+ in 90 days. Google ranks you #1 for "emergency plumber Houston". +40% calls from Google alone.
-                </div>
-              </div>
+            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "16px", padding: "20px" }}>
+              <b style={{ color: "#fff" }}>4. REVIEW + RANK</b><div style={{ color: t.color, fontSize: "11px" }}>GETS 5-STAR ON AUTOPILOT</div>
+              <div style={{ color: "#aaa", fontSize: "13px", marginTop: "8px" }}>After job done, auto-texts review. 4-5 stars → Google. 1-3 stars → you privately.</div>
             </div>
-
           </div>
 
           <div style={{ marginTop: "24px", background: "#fff", color: "#000", padding: "20px", borderRadius: "12px", textAlign: "center" }}>
-            <div style={{ fontWeight: 900, fontSize: "14px" }}>ALL 4 AGENTS + LUXURY SITE + WHATSAPP + BOOKING = $497 TODAY</div>
-            <div style={{ fontSize: "11px", color: "#666", marginTop: "6px" }}>Normally $1999 build fee - Founder price for {displaySite} only. We install in 48 hours. You keep 100% jobs.</div>
-            <a href="https://wa.me/17865880578?text=CONFIRM%20LAUNCH%20FOR%20${site}%20-%20$497" style={{ display: "inline-block", marginTop: "14px", background: "#25D366", color: "#fff", padding: "12px 24px", borderRadius: "999px", fontWeight: 900, fontSize: "12px", textDecoration: "none" }}>CONFIRM ON WHATSAPP - LAUNCH IN 48H</a>
+            <div style={{ fontWeight: 900, fontSize: "14px" }}>ALL 4 AGENTS + LUXURY SITE FOR {t.label} = $497</div>
+            <div style={{ fontSize: "11px", color: "#666", marginTop: "6px" }}>Founder price for {displaySite} only - 48h install - you keep 100% jobs</div>
+            <a href={`https://wa.me/17865880578?text=CONFIRM%20LAUNCH%20FOR%20${site}%20${category.toUpperCase()}%20-%20$497`} style={{ display: "inline-block", marginTop: "14px", background: "#25D366", color: "#fff", padding: "12px 24px", borderRadius: "999px", fontWeight: 900, fontSize: "12px", textDecoration: "none" }}>CONFIRM ON WHATSAPP - {t.label}</a>
           </div>
-
-          <div style={{ marginTop: "16px", textAlign: "center", fontSize: "10px", color: "#444" }}>Built by Venus AI HQ - Houston Research Lab - 12 plumbers already launched</div>
         </div>
       </div>
-
     </div>
   )
 }
-
-
-
-
-

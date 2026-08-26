@@ -1,4 +1,4 @@
-mport { kv } from '@vercel/kv';
+import { kv } from '@vercel/kv';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req:Request){

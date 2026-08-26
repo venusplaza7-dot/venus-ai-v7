@@ -1,53 +1,83 @@
-export default function Page({params}:{params:{site:string}}){
-const slug = params.site || '24hrplumbinghouston-com'
-const domain = slug.replace(/-com$/,'').replace(/-/g,'.') + '.com'
-const audit = {
- domain,
- title: `24 Hour Plumbing Houston | Emergency Plumber - Call Now`,
- tech: 'Old WordPress + jQuery + No AI',
- est: '2015',
- prob: 'Losing Gen-Z customers who want photo-quote, not phone call'
+'use client'
+import { useEffect, useState } from 'react'
+const WA_NUMBER = '17865880578' // +1 (786) 588-0578
+
+export default function Page({params, searchParams}:{params:{site:string}, searchParams:{industry?:string, city?:string}}){
+  const slug = params.site || '24hrplumbinghouston-com'
+  const domain = slug.replace(/-com$/,'').replace(/-/g,'.')+'.com'
+  const industry = searchParams.industry || (domain.includes('hvac')?'HVAC': domain.includes('roof')?'ROOFING':'PLUMBING')
+  const city = searchParams.city || 'Houston'
+  const [timeLeft,setTimeLeft]=useState(24*3600)
+
+  useEffect(()=>{
+    const start = localStorage.getItem(`offer_${domain}`) || String(Date.now())
+    localStorage.setItem(`offer_${domain}`,start)
+    const id=setInterval(()=>{
+      const elapsed = Math.floor((Date.now()-Number(start))/1000)
+      const left = Math.max(0,24*3600-elapsed)
+      setTimeLeft(left)
+    },1000)
+    return ()=>clearInterval(id)
+  },[domain])
+
+  const h=Math.floor(timeLeft/3600), m=Math.floor((timeLeft%3600)/60), s=timeLeft%60
+  const previewLink = `https://venus-ai-v8.vercel.app/p/${slug}`
+  const waMsg = `APPROVE ${domain} - $497 luxury rebuild with 4 AI agents. Preview: ${previewLink} - Original $1999. Activate within 24h. Industry: ${industry} City: ${city}`
+  const waLink = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(waMsg)}`
+
+  return(
+    <div className="min-h-screen bg-[#FCFCFB] text-black">
+      {/* 24H TICKER */}
+      <div className="bg-black text-white text-[11px] tracking-[0.2em] text-center py-2">
+        VENUS HQ • SPECIAL OFFER <span className="line-through opacity-50">$1999</span> → <span className="text-[#c9a86a]">$497</span> • EXPIRES IN {String(h).padStart(2,'0')}:{String(m).padStart(2,'0')}:{String(s).padStart(2,'0')} • {industry} • {city}
+      </div>
+
+      {/* YOUR LUXURY WHITE/GOLD/BLACK CONTENT */}
+      <div className="max-w-[1100px] mx-auto px-6 pt-12">
+        <h1 className="text-[48px] leading-[0.9]">{city}'s Most Trusted {industry}<br/><span className="text-black/30">Gen-Z Luxury 2026</span></h1>
+        <p className="mt-4 text-black/50">Scraped from {domain} • Rebuilt for {industry} • Complete new beautiful website below</p>
+
+        {/* 4 AI AGENTS */}
+        <div className="mt-10 grid md:grid-cols-2 gap-6">
+          <div className="border bg-white p-6 rounded-[24px]"><b>Dispatch Agent</b> — assigns tech in 9s for {industry}</div>
+          <div className="border bg-white p-6 rounded-[24px]"><b>Photo-Diagnostics</b> — {industry} photo → instant quote</div>
+          <div className="border bg-white p-6 rounded-[24px]"><b>Quote & Closer</b> — $247 fixed, books while you sleep</div>
+          <div className="border bg-white p-6 rounded-[24px]"><b>Review & Revenue</b> — 5-star + $97/mo plan</div>
+        </div>
+
+        {/* COMPLETE NEW WEBSITE PREVIEW AT BOTTOM */}
+        <div className="mt-16">
+          <h2 className="text-[11px] tracking-[0.2em] opacity-50">COMPLETE NEW BEAUTIFUL WEBSITE — LIVE PREVIEW FOR {domain}</h2>
+          <div className="mt-4 rounded-[24px] border-[8px] border-black shadow-2xl overflow-hidden bg-white">
+            <div className="bg-black text-white px-4 py-2 text-[10px] flex justify-between"><span>● ● ●</span><span>{domain}</span><span className="text-[#c9a86a]">LIVE</span></div>
+            <div className="p-8">
+              <h3 className="text-[32px]">{city} {industry} — Elite Service</h3>
+              <div className="mt-6 grid grid-cols-3 gap-4">
+                <div className="border p-4 rounded-xl">Emergency {industry}</div>
+                <div className="border p-4 rounded-xl">{industry} Repair</div>
+                <div className="border p-4 rounded-xl">{industry} Install</div>
+              </div>
+              <div className="mt-8 bg-black text-white p-6 rounded-xl text-center">This is what customers see — Apple luxury, not old WordPress</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FINAL BLACK BAR WITH WHATSAPP */}
+      <div className="bg-black text-white mt-16">
+        <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col md:flex-row justify-between gap-6">
+          <div>
+            <div className="text-[11px] tracking-[0.2em] opacity-50">AUTHORIZATION • {domain}</div>
+            <div className="mt-2 text-[28px]">Approve luxury rebuild? <span className="line-through opacity-30 text-[16px]">$1999</span> <span className="text-[#c9a86a]">$497</span></div>
+            <div className="text-[10px] mt-2 opacity-50">Offer expires in {h}h {m}m — Reminders at 12h, 6h, 1h — Share link with Venus team after payment, we activate in 24h</div>
+          </div>
+          <a href={waLink} target="_blank" className="bg-[#25D366] text-black px-8 py-4 rounded-full font-bold text-center">WHATSAPP: APPROVE SITE — $497</a>
+        </div>
+      </div>
+    </div>
+  )
 }
-return(
-<div style={{background:'#fcfcfa',fontFamily:'Inter,Arial',minHeight:'100vh',color:'#111'}}>
-<div style={{background:'#111',color:'#0A84FF',padding:'8px',textAlign:'center',fontSize:11,letterSpacing:2}}>VENUS HQ • JAN 2026 • LIVE • Tracking {domain}</div>
-<div style={{maxWidth:1100,margin:'0 auto',padding:'40px 20px'}}>
-<nav style={{display:'flex',justifyContent:'space-between',borderBottom:'1px solid rgba(0,0,0,0.06)',paddingBottom:20}}>
-<b style={{fontSize:11,letterSpacing:2}}>24HR • HOUSTON EST {audit.est}</b><span style={{border:'1px solid #ddd',borderRadius:100,padding:'4px 10px',fontSize:11}}>LICENSED TX</span>
-</nav>
-<div style={{display:'grid',gridTemplateColumns:'1.2fr 0.8fr',gap:40,padding:'60px 0'}}>
-<div>
-<h1 style={{fontSize:64,fontWeight:500,lineHeight:0.9,letterSpacing:-2,margin:0}}>Houston homes<br/><i style={{fontWeight:300}}>don't wait.</i><br/><span style={{color:'rgba(0,0,0,0.3)'}}>Neither should<br/>your plumber.</span></h1>
-<p style={{marginTop:20,color:'rgba(0,0,0,0.5)',maxWidth:400}}>Old site costs you $497 per missed booking. We rebuilt it as AI concierge that quotes, schedules in 2 min.</p>
-<div style={{marginTop:20,background:'#FBFCFD',border:'1px solid rgba(0,0,0,0.07)',borderRadius:20,padding:20}}>
-<div style={{fontSize:10,color:'#888',letterSpacing:2}}>OLD SITE AUDIT • FAILING 38/100</div>
-<p style={{fontSize:13,marginTop:10}}><b>DOMAIN:</b> {audit.domain}<br/><b>TITLE:</b> {audit.title}<br/><b>TECH:</b> {audit.tech}<br/><b>PROBLEM:</b> {audit.prob}<br/><br/>Converts at 1.2% vs competitors with AI photo-quote at 8.7%. Losing $12k/mo.</p>
-</div>
-</div>
-<div>
-<div style={{background:'#fff',border:'1px solid rgba(0,0,0,0.08)',borderRadius:20,padding:20}}>
-<p style={{fontSize:11,letterSpacing:1}}>LIVE AI DEMO — Try it</p>
-<div style={{marginTop:16,border:'2px dashed #0A84FF',borderRadius:16,padding:30,textAlign:'center',background:'#F5F8FF'}}>
-<p>📸 Upload leak photo</p><p style={{fontSize:12,color:'#888'}}>IMG_4821.jpg → AI → $247 fixed</p>
-<button style={{marginTop:10,background:'#0A84FF',color:'#fff',border:'none',padding:'8px 16px',borderRadius:100}}>Use Sample Photo</button>
-</div>
-<div style={{marginTop:16,background:'#111',color:'#fff',borderRadius:12,padding:12,fontSize:12}}>Analyzing... 100% → $247 • Pipe burst • Parts in stock • 1yr warranty • Booked in 2 min</div>
-</div>
-</div>
-</div>
-<h2 style={{fontSize:32,fontWeight:600}}>Your new luxury plumbing site — <span style={{color:'#0A84FF'}}>2026 ready</span></h2>
-<div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:16,marginTop:20}}>
-<div style={{background:'#fff',border:'1px solid #eee',borderRadius:20,padding:20}}><b>Luxury Minimal</b><p style={{fontSize:13,color:'#666'}}>White editorial, video hero, Apple Pay. Looks like Tesla.</p></div>
-<div style={{background:'#fff',border:'1px solid #eee',borderRadius:20,padding:20}}><b>20-Min Booking</b><p style={{fontSize:13,color:'#666'}}>Photo → Price → Stripe $497 → Calendar. No phone tag.</p></div>
-<div style={{background:'#fff',border:'1px solid #eee',borderRadius:20,padding:20}}><b>3x Faster + SEO</b><p style={{fontSize:13,color:'#666'}}>Next.js 15, 98 Lighthouse, auto schema. 0.8s vs 4.2s.</p></div>
-</div>
-<div style={{marginTop:40,textAlign:'center',background:'#fff',border:'1px solid #eee',borderRadius:28,padding:40}}>
-<h2 style={{fontSize:36}}>PLUMBING Elite • AI Concierge</h2>
-<p style={{color:'#666'}}>Same business {domain}, but looks like $50k brand. Live in 24h.</p>
-<a href={`https://wa.me/923000000000?text=APPROVE%20${domain}%20$497`} style={{background:'#25D366',color:'#fff',padding:'16px 32px',borderRadius:100,textDecoration:'none',fontWeight:800,display:'inline-block',marginTop:20}}>WhatsApp: APPROVE SITE — $497</a>
-</div>
-</div>
-</div>
-)
-}
+
+
+
 

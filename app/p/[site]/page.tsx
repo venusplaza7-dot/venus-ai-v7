@@ -1,58 +1,42 @@
-'use client'
-import { useState, useEffect } from 'react'
-const WA = '17865880578'
-
-export default function Page({params}: {params:{site:string}}){
-  const slug = params.site
+export default function Page() {
   const domain = '24hrplumbinghouston.com'
-  const industry = 'PLUMBING'
-  const city = 'Houston'
-  const [t, setT] = useState(86400)
-
-  useEffect(()=>{
-    const key = `t_${domain}`
-    const s = Number(localStorage.getItem(key)) || Date.now()
-    localStorage.setItem(key, String(s))
-    const id = setInterval(()=>{
-      const diff = Math.floor((Date.now()-s)/1000)
-      setT(Math.max(0, 86400-diff))
-    },1000)
-    return ()=>clearInterval(id)
-  },[domain])
-
-  const h = Math.floor(t/3600)
-  const m = Math.floor((t%3600)/60)
-  const waLink = `https://wa.me/${WA}?text=APPROVE%20${domain}%20%24497`
-
+  const wa = `https://wa.me/17865880578?text=APPROVE%20${domain}%20$497`
   return (
-    <div className="min-h-screen bg-[#080808] text-white" style={{colorScheme:'dark'}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;600;700&display=swap');`}</style>
-      
-      <div className="bg-black border-b border-zinc-900 text-center py-2 font-mono text-[10px] tracking-[0.3em] text-zinc-500">
-        VENUS HQ • $1999 → $497 • {h}H {m}M • {domain}
+    <div style={{minHeight:'100vh', background:'#000000', color:'#ffffff', fontFamily:'Inter, sans-serif'}}>
+      <div style={{background:'#000', borderBottom:'1px solid #222', textAlign:'center', padding:'8px', fontSize:'10px', letterSpacing:'2px', color:'#888'}}>
+        VENUS HQ • $1999 → $497 • 23H 35M • {domain.toUpperCase()}
       </div>
-
-      <div className="max-w-[1180px] mx-auto px-6 py-12">
-        <h1 className="text-[48px] md:text-[72px] leading-[0.9] tracking-[-2px] font-bold" style={{fontFamily:'Playfair Display, serif'}}>
-          {city}&apos;s Most<br/>Trusted {industry}<br/>
-          <span className="font-light italic text-[#c9a86a]">Gen-Z Luxury 2026</span>
+      <div style={{maxWidth:'800px', margin:'0 auto', padding:'40px 24px'}}>
+        <h1 style={{fontSize:'56px', lineHeight:'0.9', fontWeight:900, margin:0}}>
+          <span style={{color:'#fff'}}>Houston&apos;s Most</span><br/>
+          <span style={{color:'#a1a1aa'}}>Trusted PLUMBING</span><br/>
+          <span style={{color:'#c9a86a', fontStyle:'italic', fontWeight:300}}>Gen-Z Luxury 2026</span>
         </h1>
 
-        <div className="mt-8 grid md:grid-cols-3 gap-3">
-          <div className="border border-zinc-800 rounded-[20px] bg-white text-black p-5 font-bold">Dispatch Agent — {industry}</div>
-          <div className="border border-zinc-800 rounded-[20px] bg-zinc-900 text-zinc-300 p-5">Photo-Diagnostics — instant quote</div>
-          <div className="border border-zinc-800 rounded-[20px] bg-zinc-900 text-zinc-300 p-5">Quote & Closer — auto book</div>
+        <div style={{marginTop:'32px', display:'grid', gap:'12px'}}>
+          <div style={{background:'#ffffff', color:'#000000', borderRadius:'16px', padding:'16px', fontWeight:700}}>Dispatch Agent — PLUMBING</div>
+          <div style={{background:'#171717', color:'#a1a1aa', borderRadius:'16px', padding:'16px', border:'1px solid #27272a'}}>Photo-Diagnostics — instant quote</div>
+          <div style={{background:'#171717', color:'#a1a1aa', borderRadius:'16px', padding:'16px', border:'1px solid #27272a'}}>Quote & Closer — auto book</div>
         </div>
 
-        <div className="mt-8 bg-[#fcfaf7] text-black rounded-[32px] p-8 md:p-12">
-          <h2 className="text-[36px] font-bold" style={{fontFamily:'Playfair Display, serif'}}>{city} {industry} Elite</h2>
-          <p className="mt-3 text-zinc-600 max-w-[600px]">Complete new beautiful website — autonomous build. Black/White/Gold luxury with 4 AI Agents.</p>
-          <a href={waLink} className="mt-6 inline-block bg-[#25D366] text-white font-bold tracking-widest text-[12px] px-8 py-5 rounded-full">
-            WHATSAPP: APPROVE & LAUNCH
+        <div style={{marginTop:'40px', background:'#ffffff', color:'#000000', borderRadius:'32px', padding:'40px'}}>
+          <h2 style={{fontSize:'32px', fontWeight:800, margin:0}}>Houston PLUMBING Elite</h2>
+          <p style={{marginTop:'12px', color:'#52525b', lineHeight:'1.6'}}>Complete new beautiful website — autonomous build. Black/White/Gold luxury with 4 AI Agents.</p>
+          <a href={wa} style={{display:'inline-block', marginTop:'24px', background:'#22c55e', color:'#fff', fontWeight:800, fontSize:'12px', letterSpacing:'2px', padding:'18px 32px', borderRadius:'999px', textDecoration:'none'}}>
+            WHATSAPP: APPROVE & LAUNCH →
           </a>
-          <p className="mt-4 text-[12px] text-zinc-500">Authorization {domain} — $1999 → $497 — Approve?</p>
+          <p style={{marginTop:'12px', fontSize:'12px', color:'#71717a'}}>Authorization {domain} — $1999 → $497 — Approve?</p>
         </div>
       </div>
     </div>
   )
 }
+
+
+
+
+
+
+
+
+

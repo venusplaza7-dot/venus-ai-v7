@@ -3,32 +3,29 @@ on:
   schedule:
     - cron: '*/4 * * * *'
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
   send:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-
       - name: Generate INFINITE route.ts
         run: |
           cat > app/api/real/route.ts <<'ROUTE_EOF'
           import { NextResponse } from 'next/server';
           import { Redis } from '@upstash/redis';
-
           const redis = Redis.fromEnv();
           const BREVO_API_KEY = process.env.BREVO_API_KEY;
           const CITIES = ['Houston','Dallas','Miami','Phoenix','Austin','Denver','Seattle','Chicago'];
-          const NICHES = ['plumbers','roofers','hvac','electricians','lawyers','dentists'];
+          const NICHES = ['plumbers','roofers','hvac','electricians','dentists'];
+          const COLORS: any = {plumbers:'#D4AF37', roofers:'#8B4513', hvac:'#1E90FF', electricians:'#FFD700', dentists:'#00C853'};
 
           function genLead(i:number){
             const city=CITIES[i%CITIES.length];
             const niche=NICHES[Math.floor(i/CITIES.length)%NICHES.length];
             const cc=city.toLowerCase().replace(/[^a-z]/g,'');
-            return {niche,city,domain:`${niche}${cc}${i}.com`, id:i};
+            return {niche,city,domain: `${niche}${cc}${i}.com`, id:i, cc};
           }
 
           export async function GET(req:Request){
@@ -38,26 +35,38 @@ jobs:
             const now=Date.now();
             if(force || now-last>4*60*1000){
               const lead=genLead(sent.length);
+              const demoLink = `https://venus-ai-v8.vercel.app/p/${lead.domain.replace('.','-')}?cat=${lead.niche}`;
               try{
                 await fetch('https://api.brevo.com/v3/smtp/email',{
                   method:'POST',
-                  headers:{'api-key': BREVO_API_KEY!, 'Content-Type':'application/json'},
-                  body: JSON.stringify({ sender:{email:'bot@venusplaza.com'}, to:[{email:'ron@venusplaza.com'}], subject:`Lead ${lead.city} ${lead.niche}`, htmlContent:`<p>${JSON.stringify(lead)}</p>` })
+                  headers:{'api-key': BREVO_API_KEY, 'Content-Type':'application/json'},
+                  body: JSON.stringify({
+                    sender:{email:'hello@venushq7.com', name:'Venus HQ'},
+                    to:[{email:`${lead.niche}${lead.cc}${lead.id}@gmail.com`}], 
+                    subject: `${lead.domain} - your ${lead.niche} site is losing 4 jobs/week`,
+                    htmlContent: `
+                      <p>Hi — I rebuilt ${lead.domain} for ${lead.city} ${lead.niche} with live dispatch.</p>
+                      <p><a href="${demoLink}" style="background:${COLORS[lead.niche]};color:white;padding:14px 24px;text-decoration:none;border-radius:8px;display:inline-block">See Your ${lead.niche.toUpperCase()} Demo - LIVE</a></p>
+                      <p>This link is ${COLORS[lead.niche]} = ${lead.niche} — not generic gold.</p>
+                      <p>Venus HQ</p>`
+                  })
                 });
-              }catch(e){}
-              sent.push({...lead,sent_at:new Date().toISOString()});
-              await redis.set('venus_sent_list',sent);
-              await redis.set('venus_last_sent_at',now);
+                sent.push({...lead,sent_at:new Date().toISOString(), link:demoLink});
+                await redis.set('venus_sent_list',sent);
+                await redis.set('venus_last_sent_at',now);
+              }catch(e){
+                console.log(e);
+              }
             }
-            return NextResponse.json({status:'LIVE-INFINITE', sent_count:sent.length});
+            return NextResponse.json({status:'LIVE-INFINITE', sent_count:sent.length, last_link:sent[sent.length-1]?.link});
           }
           ROUTE_EOF
-
       - name: Commit and deploy
         run: |
-          git config user.name "venus-bot"
+          git config user.name "venusplaza7-dot"
           git config user.email "bot@venusplaza.com"
           git add app/api/real/route.ts
-          git diff --staged --quiet || git commit -m "fix: regenerate route.ts"
+          git commit -m "FIX ALL - cat param + hello@ sender + real color" || echo "no change"
           git push
-          curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
+
+

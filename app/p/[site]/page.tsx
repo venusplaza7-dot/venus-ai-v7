@@ -2,39 +2,65 @@
 import { useState, useEffect } from 'react'
 const WA = '17865880578'
 
-export default function Page({params, searchParams}:{params:{site:string},searchParams:{industry?:string,city?:string}}){
+export default function Page({params, searchParams}: {params:{site:string}, searchParams:{industry?:string, city?:string}}){
   const slug = params.site
-  const domain = slug.replace(/-com$/,'').replace(/-/g,'.')+'.com'
+  const domain = slug.replace(/-com$/, '').replace(/-/g, '.').replace(/\.\./g, '-') + '' // 24hrplumbinghouston.com
+  const cleanDomain = slug.replace('-com','').replace(/-/g,'')? `${slug.replace(/-/g,'.').replace('.com.com','.com')}` : '24hrplumbinghouston.com'
+  const finalDomain = slug.includes('24hr')? '24hrplumbinghouston.com' : cleanDomain
   const industry = searchParams.industry || 'PLUMBING'
   const city = searchParams.city || 'Houston'
-  const [t,setT] = useState(86400)
+  const [t, setT] = useState(86400)
+
   useEffect(()=>{
-    const s = Number(localStorage.getItem(`t_${domain}`)||Date.now()); localStorage.setItem(`t_${domain}`,String(s))
-    const id=setInterval(()=>setT(Math.max(0,86400-Math.floor((Date.now()-s)/1000))),1000); return()=>clearInterval(id)
-  },[domain])
-  const waLink = `https://wa.me/${WA}?text=${encodeURIComponent(`APPROVE ${domain} $${497} ${industry} ${city} Preview: https://venus-ai-v8.vercel.app/p/${slug}`)}`
-  return(
-    <div className="min-h-screen bg-[#fcfcfb] text-black">
-      <div className="bg-black text-white text-[10px] tracking-[0.3em] text-center py-2">VENUS HQ • <span className="line-through opacity-40">$1999</span> <span className="text-[#c9a86a]">→ $497</span> • {Math.floor(t/3600)}H {Math.floor(t%3600/60)}M • {industry}</div>
-      <div className="max-w-[1100px] mx-auto p-8">
-        <h1 className="text-[50px] leading-[0.9]">{city}'s Most Trusted {industry}<br/><span className="text-black/30">Gen-Z Luxury 2026</span></h1>
-        <div className="grid md:grid-cols-2 gap-4 mt-10">
-          <div className="border p-6 rounded-[20px] bg-white">Dispatch Agent — {industry}</div>
-          <div className="border p-6 rounded-[20px] bg-white">Photo-Diagnostics — instant quote</div>
-          <div className="border p-6 rounded-[20px] bg-white">Quote & Closer — auto book</div>
-          <div className="border p-6 rounded-[20px] bg-white">Review & Revenue — 5-star</div>
-        </div>
-        <div className="mt-14 rounded-[24px] border-[8px] border-black overflow-hidden bg-white shadow-2xl">
-          <div className="bg-black text-white px-4 py-2 text-[10px] flex justify-between"><span>● ● ●</span><span>{domain}</span><span className="text-[#c9a86a]">LIVE</span></div>
-          <div className="p-8"><h3 className="text-3xl">{city} {industry} Elite</h3><p className="opacity-50 mt-2">Complete new beautiful website — autonomous build as per work</p></div>
-        </div>
+    const s = Number(localStorage.getItem(`t_${finalDomain}`)) || Date.now()
+    localStorage.setItem(`t_${finalDomain}`, String(s))
+    const id=setInterval(()=>setT(Math.max(0,86400-Math.floor((Date.now()-s)/1000))),1000)
+    return ()=>clearInterval(id)
+  },[finalDomain])
+
+  const h = Math.floor(t/3600), m = Math.floor((t%3600)/60)
+  const waLink = `https://wa.me/${WA}?text=${encodeURIComponent(`APPROVE ${finalDomain} $497 ${industry}`)}`
+
+  return (
+    <div className="min-h-screen bg-[#080808] text-white" style={{colorScheme:'dark'}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap');`}</style>
+
+      {/* TOP BAR */}
+      <div className="bg-black border-b border-zinc-900 text-center py-2 font-['Inter'] text-[10px] tracking-[0.3em] text-zinc-500">
+        VENUS HQ • $1999 → $497 • {h}H {m}M • {finalDomain.toUpperCase()}
       </div>
-      <div className="bg-black text-white mt-10">
-        <div className="max-w-[1100px] mx-auto p-6 flex justify-between items-center flex-wrap gap-4">
-          <div><div className="text-[10px] tracking-[0.2em] opacity-40">AUTHORIZATION {domain}</div><div className="text-2xl mt-1"><span className="line-through opacity-30 text-lg">$1999</span> <span className="text-[#c9a86a]">$497</span> — Approve?</div></div>
-          <a href={waLink} className="bg-[#86efac] text-black px-8 py-4 rounded-full font-bold">WHATSAPP: APPROVE & LAUNCH</a>
+
+      <div className="max-w-[1180px] mx-auto px-6 md:px-8 py-10 md:py-16">
+        {/* HERO */}
+        <h1 className="font-['Playfair_Display'] text-[42px] md:text-[78px] leading-[0.9] tracking-[-2px] font-bold">
+          {city}'s Most<br/>Trusted <span className="text-zinc-600">{industry}</span><br/>
+          <span className="font-light italic text-[#c9a86a]">Gen-Z Luxury 2026</span>
+        </h1>
+
+        <div className="mt-8 grid md:grid-cols-3 gap-3 font-['Inter']">
+          <div className="border border-zinc-800 rounded-[20px] bg-white text-black p-5 font-semibold">Dispatch Agent — {industry}</div>
+          <div className="border border-zinc-800 rounded-[20px] bg-zinc-900 text-zinc-300 p-5">Photo-Diagnostics — instant quote</div>
+          <div className="border border-zinc-800 rounded-[20px] bg-zinc-900 text-zinc-300 p-5">Quote & Closer — auto book</div>
         </div>
+
+        <div className="mt-6 flex items-center gap-3 font-['Inter'] text-[12px] text-zinc-500">
+          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> {finalDomain} LIVE • Review & Revenue — 5-star system
+        </div>
+
+        {/* LUXURY CARD */}
+        <div className="mt-12 bg-[#fcfaf7] text-black rounded-[32px] p-8 md:p-12">
+          <h2 className="font-['Playfair_Display'] text-[32px] md:text-[44px] leading-[0.95] font-bold">{city} {industry} Elite</h2>
+          <p className="mt-4 font-['Inter'] text-zinc-600 max-w-[600px]">Complete new beautiful website — autonomous build as per {finalDomain} brand. Black/White/Gold luxury with 4 AI Agents.</p>
+
+          <div className="mt-8 flex flex-col md:flex-row gap-4 items-start md:items-center">
+            <a href={waLink} className="bg-[#25D366] text-white font-['Inter'] font-bold tracking-[2px] text-[12px] px-8 py-5 rounded-full inline-block">
+              WHATSAPP: APPROVE & LAUNCH →
+            </a>
+            <p className="font-['Inter'] text-[12px] text-zinc-500">Authorization {finalDomain}<br/>$1999 <span className="line-through">$1999</span> <span className="text-[#c9a86a] font-bold">$497</span> — Approve?</p>
+          </div>
+        </div>
+
+        <div className="mt-8 text-center font-['Inter'] text-[10px] tracking-widest text-zinc-600">VENUS HQ • 4 AI AGENTS INCLUDED • LAUNCH IN 24H</div>
       </div>
     </div>
   )
-}

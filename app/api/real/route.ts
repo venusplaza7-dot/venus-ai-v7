@@ -2,35 +2,24 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(){
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
+  let rawUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || '';
+  let token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '';
+  // CLEAN - remove quotes and trailing slash
+  const url = rawUrl.replace(/"/g,'').replace(/'/g,'').trim().replace(/\/$/,'');
+  token = token.replace(/"/g,'').replace(/'/g,'').trim();
+  
   const demoLink = `https://venus-ai-v8.vercel.app/p/demo-${Date.now()}?cat=roofers`;
-  let debug = '';
+  let debug = `clean_url:${url} token_len:${token.length}`;
 
   if(url && token){
     try{
       const h = {Authorization:`Bearer ${token}`};
-      // 1. INCR - this always works
-      const r1 = await fetch(`${url}/incr/sent_count`, {headers:h, cache:'no-store'});
-      const j1 = await r1.json();
-      debug += `incr:${JSON.stringify(j1)};`;
-
-      // 2. SET last_link - POST with raw body (most reliable for Upstash)
-      const r2 = await fetch(`${url}/set/last_link`, {
-        method:'POST',
-        headers:{...h, 'Content-Type':'text/plain'},
-        body: demoLink,
-        cache:'no-store'
-      });
-      const j2 = await r2.json();
-      debug += `set:${JSON.stringify(j2)}`;
-    }catch(e:any){ debug = e.message; }
+      const r1 = await fetch(`${url}/incr/sent_count`, {headers:h, cache:'no-store'}).then(r=>r.json());
+      debug += ` incr:${JSON.stringify(r1)}`;
+      const r2 = await fetch(`${url}/set/last_link/${encodeURIComponent(demoLink)}`, {headers:h, cache:'no-store'}).then(r=>r.json());
+      debug += ` set:${JSON.stringify(r2)}`;
+    }catch(e:any){ debug += ` err:${e.message}`; }
   }
 
-  return Response.json({
-    status:'LIVE-INFINITE-FREE',
-    redis:'upstash-kv-time-field - Free - Available',
-    last_link: demoLink,
-    debug: debug
-  });
+  return Response.json({status:'LIVE-INFINITE-FREE', redis:'upstash-kv-time-field', last_link:demoLink, debug});
 }

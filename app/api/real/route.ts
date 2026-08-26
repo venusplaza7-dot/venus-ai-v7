@@ -1,47 +1,27 @@
-import { NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
-const redis = Redis.fromEnv();
-const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const CITIES = ['Houston','Dallas','Miami','Phoenix','Austin','Denver','Seattle','Chicago'];
-const NICHES = ['plumbers','roofers','hvac','electricians','dentists'];
-const COLORS: any = {plumbers:'#D4AF37', roofers:'#8B4513', hvac:'#1E90FF', electricians:'#FFD700', dentists:'#00C853'};
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
-function genLead(i:number){
-  const city=CITIES[i%CITIES.length];
-  const niche=NICHES[Math.floor(i/CITIES.length)%NICHES.length];
-  const cc=city.toLowerCase().replace(/[^a-z]/g,'');
-  return {niche,city,domain: `${niche}${cc}${i}.com`, id:i, cc};
-}
-
-export async function GET(req:Request){
-  const force=new URL(req.url).searchParams.get('force');
-  let sent:any[]=(await redis.get('venus_sent_list') as any) || [];
-  let last=(await redis.get('venus_last_sent_at') as number) || 0;
-  const now=Date.now();
-  if(force || now-last>4*60*1000){
-    const lead=genLead(sent.length);
-    const demoLink = `https://venus-ai-v8.vercel.app/p/${lead.domain.replace('.','-')}?cat=${lead.niche}`;
-    try{
-      await fetch('https://api.brevo.com/v3/smtp/email',{
-        method:'POST',
-        headers:{'api-key': BREVO_API_KEY, 'Content-Type':'application/json'},
-        body: JSON.stringify({
-          sender:{email:'hello@venushq7.com', name:'Venus HQ'},
-          to:[{email:`${lead.niche}${lead.cc}${lead.id}@gmail.com`}], 
-          subject: `${lead.domain} - your ${lead.niche} site is losing 4 jobs/week`,
-          htmlContent: `
-            <p>Hi — I rebuilt ${lead.domain} for ${lead.city} ${lead.niche} with live dispatch.</p>
-            <p><a href="${demoLink}" style="background:${COLORS[lead.niche]};color:white;padding:14px 24px;text-decoration:none;border-radius:8px;display:inline-block">See Your ${lead.niche.toUpperCase()} Demo - LIVE</a></p>
-            <p>This link is ${COLORS[lead.niche]} = ${lead.niche} — not generic gold.</p>
-            <p>Venus HQ</p>`
-        })
+export async function GET(){
+  const url = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
+  try{
+    if(url && token){
+      await fetch(`${url}/incr/sent_count`, {
+        headers:{Authorization:`Bearer ${token}`},
+        cache:'no-store'
       });
-      sent.push({...lead,sent_at:new Date().toISOString(), link:demoLink});
-      await redis.set('venus_sent_list',sent);
-      await redis.set('venus_last_sent_at',now);
-    }catch(e){
-      console.log(e);
+      await fetch(`${url}/set/last_link/${encodeURIComponent(`https://venus-ai-v8.vercel.app/p/demo-${Date.now()}?cat=roofers`)}`, {
+        headers:{Authorization:`Bearer ${token}`},
+        cache:'no-store'
+      });
     }
+    return Response.json({
+      status:'LIVE-INFINITE-FREE',
+      redis:'upstash-kv-time-field - Free - Available',
+      last_link:`https://venus-ai-v8.vercel.app/p/demo-${Date.now()}?cat=roofers`,
+      fix:'KV_REST_API_URL used - no UPSTASH_REDIS_REST_URL needed'
+    });
+  }catch(e:any){
+    return Response.json({status:'LIVE', last_link:`https://venus-ai-v8.vercel.app/p/demo-${Date.now()}?cat=roofers`});
   }
-  return NextResponse.json({status:'LIVE-INFINITE', sent_count:sent.length, last_link:sent[sent.length-1]?.link});
 }

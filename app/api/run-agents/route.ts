@@ -1,12 +1,22 @@
-import { kv } from '@vercel/kv'
-export const dynamic = 'force-dynamic'
-export async function GET(){
-const to = 'venusailux@gmail.com'
-const from = 'Venusplaza7@gmail.com'
-const oldSite = 'https://24hrplumbinghouston.com'
-const newSite = 'https://venus-ai-v8.vercel.app/p/24hrplumbinghouston-com'
-const html = '<div style="font-family:Arial,Helvetica,sans-serif;max-width:650px;margin:0 auto;background:#ffffff;color:#111111;padding:0;border:1px solid #e5e5e5"><div style="background:#0a0a0a;color:#ffffff;padding:30px;text-align:center"><h1 style="margin:0;font-size:28px;letter-spacing:1px">YOUR 2015 SITE IS COSTING YOU CLIENTS</h1><p style="margin:10px 0 0;color:#cccccc">We rebuilt it as Luxury AI Empire</p></div><div style="padding:30px"><p>Hi Owner,</p><p>I found <b>' + oldSite + '</b> - your site from 2015. It looks outdated and is losing you $ on Google.</p><div style="background:#f8f8f8;border-left:4px solid #000;padding:15px;margin:20px 0"><p style="margin:0"><b>WHO:</b> Venus AI - We turn old sites into luxury AI machines</p><p style="margin:5px 0 0"><b>WHAT:</b> Your new luxury preview is ready:</p><p style="margin:5px 0"><a href="' + newSite + '" style="color:#000;font-weight:bold">' + newSite + '</a></p><p style="margin:0"><b>WHY NOW:</b> See difference:</p><p style="margin:5px 0">OLD (2015): <a href="' + oldSite + '">' + oldSite + '</a><br>NEW (2026 Luxury): <a href="' + newSite + '">' + newSite + '</a></p></div><h3 style="margin-top:30px">Your New Luxury Site Includes (Worth $5000+):</h3><ul style="line-height:28px"><li> <b>AI Booking Assistant 24/7</b> - Never miss a client</li><li> <b>AI Chat Support</b> - Answers instantly</li><li> <b>AI Review Booster</b> - Auto gets 5-star reviews</li><li> <b>AI SEO Engine</b> - Ranks you #1 on Google</li></ul><div style="background:#0a0a0a;color:#fff;padding:20px;text-align:center;margin:30px 0"><p style="margin:0;font-size:14px;letter-spacing:2px">INTRODUCTORY FOUNDER OFFER</p><p style="margin:10px 0;font-size:32px;font-weight:bold">$497 <span style="font-size:18px;text-decoration:line-through;color:#888;margin-left:10px">Was $1999</span></p><p style="margin:0;font-size:13px;color:#aaa">Only for first 20 clients - Price goes back to $1999 after</p></div><div style="text-align:center"><a href="' + newSite + '" style="background:#000;color:#fff;padding:16px 32px;text-decoration:none;display:inline-block;font-weight:bold;letter-spacing:1px">SEE YOUR LUXURY PREVIEW NOW</a></div><p style="margin-top:30px">Reply <b>YES</b> and I will activate your new luxury site for $497 in 24 hours, with full AI setup.</p><p>To your success,<br><b>Ron - Venus AI</b><br>Founder<br>' + from + '</p></div><div style="background:#f5f5f5;padding:15px;text-align:center;font-size:11px;color:#888">This preview was custom built for ' + oldSite + '</div></div>'
-const r = await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key': process.env.BREVO_API_KEY as string,'Content-Type':'application/json'},body: JSON.stringify({sender:{name:'Venus AI Luxury',email:from},to:[{email:to}],subject:'24hrplumbinghouston.com - Your 2015 site rebuilt as luxury (Was $1999 Now $497)',htmlContent:html})})
-const j = await r.json()
-return Response.json({luxury:true,sent:to,from:from,brevo:j,preview:newSite})
-}
+<div style="margin:0;padding:0;background:#f6f6f6"><table width="100%" style="background:#f6f6f6;padding:40px 0"><tr><td align="center">
+<table width="600" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)"><tr><td style="background:#0a0a0a;padding:32px;text-align:center">
+<p style="margin:0;color:#c9a86a;letter-spacing:4px;font-size:11px">VENUS AI • LUXURY STUDIO</p>
+<h1 style="margin:12px 0 0;color:#fff;font-size:24px">DOMAIN.com<br/>rebuilt for 2026</h1>
+</td></tr><tr><td style="padding:36px">
+<p>Hi TEAM,</p>
+<p>I audited DOMAIN.com — live since 2015. Mobile slow, no photo-quote.</p>
+<p>I rebuilt it as private luxury preview — Apple white, $50k feel:</p>
+<div style="text-align:center;margin:28px 0"><a href="PREVIEW_LINK" style="background:#0a0a0a;color:#fff;padding:16px 32px;border-radius:100px;text-decoration:none;font-weight:700">See Your Private Preview →</a></div>
+<div style="background:#fafaf7;border:1px solid #eee;border-radius:12px;padding:20px">
+<li><b>Photo → Quote → Booked</b> in 2 min</li>
+<li><b>20-min booking</b> — Apple Pay</li>
+<li><b>Google reviews</b> auto</li>
+</div>
+<div style="background:#0a0a0a;border-radius:12px;padding:20px;text-align:center;margin:24px 0">
+<p style="color:#c9a86a;font-size:11px">FOUNDER OFFER</p>
+<p style="color:#fff;font-size:28px;font-weight:800">$497 <span style="text-decoration:line-through;color:#666;font-size:16px">$1999</span></p>
+</div>
+<p>Reply YES and I push live in 24h. Or green button inside preview approves.</p>
+<p>Ron — Venus AI</p>
+</td></tr></table></td></tr></table></div>
+

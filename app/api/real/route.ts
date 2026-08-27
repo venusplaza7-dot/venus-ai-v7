@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
         queue = queue.filter(l => !(l.business===lead.business && l.cat===lead.cat));
         await new Promise(r=>setTimeout(r,800));
       }
-      await setQ(queue);
+      await setQueue(queue);
       return NextResponse.json({ status: 'BLAST_5_LIVE_1_PER_CAT', live: live ? 'REAL_CUSTOMERS' : 'TEST_ve9us1', total: blasted.length, blasted, remaining: queue.length });
     }
 

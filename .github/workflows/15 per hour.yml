@@ -1,17 +1,15 @@
-name: v8-15-per-hour
+name: send
 on:
   schedule:
     - cron: '*/4 * * * *'
   workflow_dispatch:
-
 jobs:
   send:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Venus API 15 per hour
+      - name: Ping Venus LIVE
         run: |
           curl -s "https://venus-ai-v8.vercel.app/api/real?force=1&cat=roofers" 
-          echo "Sent roofer"
+          echo "--- roofer sent ---"
           curl -s "https://venus-ai-v8.vercel.app/api/real?force=1&cat=plumbers"
-          echo "Sent plumber"
-  
+          echo "--- plumber sent ---"

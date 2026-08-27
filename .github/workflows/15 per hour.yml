@@ -8,8 +8,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Venus LIVE
-        run: |
-          curl -s "https://venus-ai-v8.vercel.app/api/real?force=1&cat=roofers" 
-          echo "--- roofer sent ---"
-          curl -s "https://venus-ai-v8.vercel.app/api/real?force=1&cat=plumbers"
-          echo "--- plumber sent ---"
+        run: curl -s "https://venus-ai-v8.vercel.app/api/real?force=1"

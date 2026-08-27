@@ -1,3 +1,14 @@
 {
-  "crons": []
+  "crons": [
+    { "path": "/api/agents/mine?cat=roofers", "schedule": "0 6 * * *" },
+    { "path": "/api/agents/mine?cat=plumbers", "schedule": "10 6 * * *" },
+    { "path": "/api/agents/mine?cat=hvac", "schedule": "20 6 * * *" },
+    { "path": "/api/agents/mine?cat=dentists", "schedule": "30 6 * * *" },
+    { "path": "/api/agents/mine?cat=electricians", "schedule": "40 6 * * *" },
+    { "path": "/api/real?cat=roofers", "schedule": "0 */2 * * *" },
+    { "path": "/api/real?cat=plumbers", "schedule": "15 */2 * * *" },
+    { "path": "/api/real?cat=hvac", "schedule": "30 */2 * * *" },
+    { "path": "/api/real?cat=dentists", "schedule": "45 */2 * * *" },
+    { "path": "/api/real?cat=electricians", "schedule": "10 */3 * * *" }
+  ]
 }

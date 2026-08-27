@@ -1,55 +1,81 @@
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+async function scrapeRealEmail(domain: string): Promise<{email:string|null, html:string}>{
+  const targets = [`https://${domain}`,`https://${domain}/contact`,`https://${domain}/contact-us`];
+  const re = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi;
+  let fullHtml = '';
+  for(const url of targets){
+    try{
+      const res = await fetch(url,{headers:{'User-Agent':'Mozilla/5.0'}, signal:AbortSignal.timeout(7000)});
+      const t = await res.text();
+      fullHtml += t.slice(0,5000);
+      const found = t.match(re) || [];
+      for(let e of found){
+        e=e.toLowerCase();
+        if(e.includes('.png')||e.includes('.jpg')||e.includes('example')||e.includes('sentry')||e.includes('wix')) continue;
+        if(e.includes('info@')||e.includes('contact@')||e.includes('hello@')) return {email:e, html:t};
+      }
+      if(found[0]) return {email:found[0].toLowerCase(), html:t};
+    }catch{}
+  }
+  return {email:null, html:fullHtml};
+}
+
 export async function GET(req: Request){
   const { searchParams } = new URL(req.url);
   const cat = searchParams.get('cat') || 'roofers';
-  let rawUrl = (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || '').replace(/"/g,'').replace(/\/$/,'');
-  let rawToken = (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '').replace(/"/g,'').trim();
+  const forceDomain = searchParams.get('domain') || '';
+  let rawUrl = (process.env.KV_REST_API_URL || '').replace(/"/g,'').replace(/\/$/,'');
+  let rawToken = (process.env.KV_REST_API_TOKEN || '').replace(/"/g,'').trim();
   const brevoKey = (process.env.BREVO_API_KEY || '').replace(/"/g,'').trim();
 
-  const demoId = Date.now();
-  const demoLink = `https://venus-ai-v8.vercel.app/p/demo-${demoId}?cat=${cat}`;
-  const oldDomain = `24hr${cat}houston.com`;
-  let count = 0;
-  let sentTo = 'none';
-  let brevoRes = 'skipped';
-
-  if(rawUrl && rawToken){
-    const h = {Authorization:`Bearer ${rawToken}`};
+  // get domain from queue or force
+  let targetDomain = forceDomain;
+  if(!targetDomain && rawUrl && rawToken){
     try{
-      await fetch(`${rawUrl}/incr/sent_count`, {headers:h});
-      await fetch(`${rawUrl}/incr/cat:${cat}`, {headers:h});
-      await fetch(`${rawUrl}/set/last_link/${encodeURIComponent(demoLink)}`, {headers:h});
-      const r = await fetch(`${rawUrl}/get/sent_count`, {headers:h}).then(r=>r.json());
-      count = r.result || 0;
-    }catch(e){}
+      const h={Authorization:`Bearer ${rawToken}`};
+      const r = await fetch(`${rawUrl}/lpop/leads:${cat}`,{headers:h}).then(r=>r.json());
+      targetDomain = r.result || `24hr${cat}houston.com`;
+    }catch{ targetDomain = `24hr${cat}houston.com`; }
   }
 
-  const toEmail = process.env.TEST_EMAIL || 've9us1@gmail.com';
+  const scraped = await scrapeRealEmail(targetDomain);
+  const toEmail = scraped.email || process.env.TEST_EMAIL || 've9us1@gmail.com';
+  const demoId = Date.now();
+  const demoLink = `https://venus-ai-v8.vercel.app/p/demo-${demoId}?cat=${cat}&domain=${targetDomain}`;
+
+  let count=0, brevoRes='skipped';
+  if(rawUrl && rawToken){
+    const h={Authorization:`Bearer ${rawToken}`};
+    try{
+      await fetch(`${rawUrl}/incr/sent_count`,{headers:h});
+      const r = await fetch(`${rawUrl}/get/sent_count`,{headers:h}).then(r=>r.json());
+      count=r.result||0;
+    }catch{}
+  }
 
   if(brevoKey){
-    try{
-      const html = `
+    const html = `
 <div style="font-family:Arial,sans-serif;background:#f5f5f5;padding:20px">
 <div style="max-width:600px;margin:0 auto">
   <div style="background:#fff;padding:24px;border-radius:12px;margin-bottom:16px;border:1px solid #e5e5e5">
-    <p style="margin:0 0 12px 0;color:#111;font-size:14px;line-height:1.6">Hi, I'm <b>Ron from Venus HQ</b> — we build AI websites for ${cat} in Houston.</p>
-    <p style="margin:0 0 12px 0;color:#444;font-size:13px;line-height:1.6">I was auditing ${cat} sites in Houston and found <b>${oldDomain}</b> loads in 8s, no AI chat, no instant booking — you're losing 60% of leads to competitors who answer faster.</p>
-    <p style="margin:0;color:#444;font-size:13px;line-height:1.6">So I built you a <b>live demo</b> already — Gen-Z luxury design + 4 AI agents that answer 24/7, book jobs, and capture calls.</p>
+    <p style="margin:0 0 12px 0;color:#111;font-size:14px;line-height:1.6">Hi team at <b>${targetDomain}</b>, I'm <b>Ron from Venus HQ</b> — we build AI websites for ${cat} in Houston.</p>
+    <p style="margin:0 0 12px 0;color:#444;font-size:13px;line-height:1.6">I audited ${cat} sites in Houston and found <b>${targetDomain}</b> loads in 8s, no AI chat, no instant booking — you're losing 60% leads to competitors.</p>
+    <p style="margin:0;color:#444;font-size:13px;line-height:1.6">So I built you a <b>live demo</b> — Gen-Z luxury + 4 AI agents 24/7.</p>
   </div>
   <div style="background:#111;border:1px solid #222;border-radius:16px;overflow:hidden">
     <div style="padding:32px 28px 20px 28px">
       <div style="color:#666;font-size:10px;letter-spacing:3px;text-transform:uppercase">VENUS HQ - AGENT AUDIT</div>
       <div style="color:#fff;font-size:38px;line-height:1.1;font-weight:700;margin-top:16px">Your new <i style="color:#d4b57a;font-weight:300">website</i> is ready<br>for review.</div>
       <div style="height:2px;width:40px;background:#d4b57a;margin:18px 0"></div>
-      <div style="color:#666;font-size:13px;line-height:1.6">OLD: <span style="color:#4a8af4">${oldDomain}</span> - 8s load, no AI<br>NEW: <span style="color:#fff;font-weight:bold">Gen-Z Luxury Black/White/Gold</span> + 4 AI Agents</div>
+      <div style="color:#666;font-size:13px;line-height:1.6">OLD: <span style="color:#4a8af4">${targetDomain}</span> - 8s load, no AI<br>NEW: <span style="color:#fff;font-weight:bold">Gen-Z Luxury Black/White/Gold</span> + 4 AI Agents</div>
       <a href="${demoLink}" style="display:inline-block;margin-top:20px;background:#fff;color:#000;padding:14px 24px;border-radius:100px;font-size:12px;letter-spacing:2px;font-weight:700;text-decoration:none">YOUR NEW WEBSITE →</a>
     </div>
     <div style="border-top:1px solid #222;padding:28px;text-align:center">
       <div style="color:#555;font-size:9px;letter-spacing:4px">INVITATION TO LAUNCH</div>
       <div style="color:#fff;font-size:42px;line-height:1.1;margin-top:10px">Launch within<br><span style="color:#d4b57a">24 hours.</span></div>
-      <a href="https://wa.me/17865880578?text=Hi%20Venus%20-%20I%20want%20to%20launch%20my%20${cat}%20site%20${demoLink}" style="display:inline-block;margin-top:20px;background:#00d26a;color:#000;padding:16px 32px;border-radius:100px;font-size:12px;letter-spacing:2px;font-weight:800;text-decoration:none">CONFIRM VIA WHATSAPP</a>
+      <a href="https://wa.me/17865880578?text=Hi%20Venus%20-%20launch%20${targetDomain}%20${demoLink}" style="display:inline-block;margin-top:20px;background:#00d26a;color:#000;padding:16px 32px;border-radius:100px;font-size:12px;letter-spacing:2px;font-weight:800;text-decoration:none">CONFIRM VIA WHATSAPP</a>
       <div style="color:#555;font-size:11px;margin-top:14px">DIRECT +1 (786) 588-0578 - <span style="text-decoration:line-through">$1999</span> -> <span style="color:#fff">$497</span></div>
     </div>
   </div>
@@ -58,20 +84,15 @@ export async function GET(req: Request){
     <ul style="margin:0;padding-left:18px;color:#444;font-size:12px;line-height:1.8">
       <li><b>Who we are:</b> Venus HQ — AI website agency for ${cat}, roofers, HVAC, electricians</li>
       <li><b>What we do:</b> Luxury site + AI Receptionist + Quote Bot + Review Bot + SEO</li>
-      <li><b>Price:</b> Original $1999, <b>Intro $497 one-time</b> — you own it, no monthly</li>
+      <li><b>Price:</b> Original $1999, <b>Intro $497 one-time</b></li>
     </ul>
   </div>
-  <p style="text-align:center;color:#888;font-size:11px;margin-top:16px">One-time audit. Ignore if not interested. <a href="https://venus-ai-v8.vercel.app/api/unsubscribe?email=${toEmail}" style="color:#888">Unsubscribe</a></p>
-  <img src="https://venus-ai-v8.vercel.app/api/track?event=open&cat=${cat}" width="1" height="1"/>
+  <p style="text-align:center;color:#888;font-size:11px;margin-top:16px">One-time audit. <a href="https://venus-ai-v8.vercel.app/api/unsubscribe?email=${toEmail}" style="color:#888">Unsubscribe</a></p>
 </div>
-</div>
-`;
-      const res = await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':brevoKey,'Content-Type':'application/json'},body:JSON.stringify({sender:{name:'Venus HQ',email:'noreply@venushq7.com'},to:[{email:toEmail}],subject:`${cat} — Your new website is ready for review. $1999 → $497`,htmlContent:html})});
-      const j = await res.json();
-      brevoRes = JSON.stringify(j).slice(0,300);
-      sentTo = toEmail;
-    }catch(e:any){ brevoRes = 'error:'+e.message; }
+</div>`;
+    const res = await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':brevoKey,'Content-Type':'application/json'},body:JSON.stringify({sender:{name:'Venus HQ',email:'noreply@venushq7.com'},to:[{email:toEmail}],subject:`${targetDomain} — Your new website is ready. $1999 → $497`,htmlContent:html})});
+    const j = await res.json();
+    brevoRes=JSON.stringify(j).slice(0,300);
   }
-
-  return Response.json({status:'LIVE-INFINITE-FREE',count,cat,last_link:demoLink,sent_to:sentTo,brevo_response:brevoRes,track_open:`https://venus-ai-v8.vercel.app/api/track?event=open&cat=${cat}`,track_click:`https://venus-ai-v8.vercel.app/api/track?event=click&cat=${cat}&url=${encodeURIComponent(demoLink)}`});
+  return Response.json({status:'LUXURY-FINAL-LOCKED',count,cat,target_domain:targetDomain,scraped_email:scraped.email,sent_to:toEmail,brevo_response:brevoRes,last_link:demoLink});
 }

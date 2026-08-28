@@ -1,56 +1,51 @@
-import { NextResponse } from 'next/server'
-import dns from 'dns/promises'
-
+import { kv } from '@vercel/kv'
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
-export const revalidate = 0
 
-// REAL factory - 20 niches
-const REAL_NICHES = [
-  { niche: 'plumbers', slug: 'houston-plumber-pros', domain: 'houstonplumbing.com', email: 'info@houstonplumbing.com' },
-  { niche: 'plumbers', slug: 'emergency-plumber-houston', domain: 'emergencyplumberhouston.com', email: 'contact@emergencyplumberhouston.com' },
-  { niche: 'roofers', slug: 'houston-roofing-kings', domain: 'houstonroofing.com', email: 'info@houstonroofing.com' },
-  { niche: 'electricians', slug: 'houston-electric-pro', domain: 'houstonelectrician.com', email: 'service@houstonelectrician.com' },
-]
+export async function GET(){
+  const city='houston'
+  const niches=['roofing','plumbers','hvac','dentists']
+  let all:any[]=[]
+  let queueCount=0
+  let blastedCount=0
 
-async function hasMX(domain) {
-  try {
-    const mx = await dns.resolveMx(domain)
-    return mx && mx.length > 0
-  } catch { return false }
-}
-
-export async function GET(req) {
-  const { searchParams } = new URL(req.url)
-  const isReal = searchParams.get('real') === 'true'
-
-  if (!isReal) {
-    return NextResponse.json({ total: 285, totalRealSent: 0, message: 'Add ?real=true for real factory' })
-  }
-
-  const BREVO_KEY = process.env.BREVO_API_KEY
-  const SENDER = process.env.VENUS_SENDER_EMAIL || 've9us1@gmail.com'
-
-  // MX Validate REAL leads only
-  const validated = []
-  for (const lead of REAL_NICHES) {
-    if (await hasMX(lead.domain)) {
-      validated.push({ ...lead, mx_valid: true, sender: SENDER, proposal_url: `/p/${lead.slug}-houston` })
+  for(let niche of niches){
+    const ids = await kv.smembers(`leads:${city}:${niche}`) as string[]
+    const q = await kv.smembers(`queue:${city}:${niche}`) as string[]
+    const b = await kv.smembers(`blasted:${city}:${niche}`) as string[]
+    queueCount+=q.length
+    blastedCount+=b.length
+    
+    for(let id of ids.slice(0,5)){
+      const lead:any = await kv.get(`lead:${id}`)
+      if(lead) all.push(lead)
     }
   }
 
-  return NextResponse.json({
-    status: 'LIVE',
-    brevo_key_present: !!BREVO_KEY,
-    sender: SENDER,
-    totalRealSent: 0,
-    real_leads_mx_valid: validated.length,
-    leads: validated,
-    message: 'Ready to send 15/hr REAL - trigger /api/cron/send-real?force=true'
-  })
+  const lastCron:any = await kv.get('last_cron')
+
+  // Return HTML dashboard
+  const html = `
+  <html><body style="background:#000;color:#fff;font-family:monospace;padding:20px">
+  <h1>VENUS HQ7 LIVE AGENT DASHBOARD</h1>
+  <p>Last Cron: ${JSON.stringify(lastCron||'never')}</p>
+  <p>Queue waiting: ${queueCount} | Blasted sent: ${blastedCount} | Total mined: ${all.length}</p>
+  <table border=1 cellpadding=10 style="border-collapse:collapse;width:100%">
+  <tr><th>Time</th><th>Niche</th><th>Business</th><th>Old Domain (REAL)</th><th>Email (REAL client)</th><th>Link</th><th>Status</th></tr>
+  ${all.map(l=>`
+    <tr>
+      <td>${new Date(l.created).toLocaleString()}</td>
+      <td>${l.niche}</td>
+      <td>${l.business}</td>
+      <td><b style="color:#D4AF37">${l.domain}</b><br><a href="https://${l.domain}" target="_blank" style="color:#aaa">Check old site →</a></td>
+      <td>${l.email}</td>
+      <td><a href="${l.link}" target="_blank" style="color:#7ED7C1">View rebuilt</a></td>
+      <td>${l.status}</td>
+    </tr>
+  `).join('')}
+  </table>
+  <p>How to know real? Click old domain link - you will see 2008 old website. Email is info@ that domain - real client. Click rebuilt link - you see your new page with $1997→$497 + 24H.</p>
+  <p>Proof 2: Go Resend.com → Logs → You see emails sent to real info@ domains. Proof 3: Go Vercel Logs → /api/cron/blast → You see 20 sent every 30 min.</p>
+  </body></html>`
+
+  return new Response(html, {headers:{'Content-Type':'text/html'}})
 }
-
-export async function POST(req) { return GET(req) }
-
-
-

@@ -12,7 +12,16 @@ export async function GET(){
   let mined:any[] = []
   let totalSent = 0
 
-  // 1. MINE REAL OLD SITES - 4 niches = 20 leads
+  /        let domain = ''
+        try{ domain = new URL(rawLink).hostname.replace('www.','') }catch{ continue }
+
+        // V10 ULTRA STRICT - ONLY small houston roofing old sites
+        const JUNK = ['yelp','facebook','instagram','yellowpages','angi','thumbtack','bbb.org','homeadvisor','houzz','bestpick','linkedin','wikipedia','amazon','youtube','twitter','tiktok','serviceagent','google.com','decra.com','owenscorning','gaf.com','certainteed','roofing.net','rooferscoffeeshop']
+        if(JUNK.some(x=>domain.includes(x))) continue
+        if(domain.endsWith('.ai') || domain.endsWith('.io')) continue // no AI companies
+        if(!domain.includes('roof') && !domain.includes('houston')) continue // MUST contain roof or houston - this kills google.com
+        if(mined.some(m=>m.domain===domain)) continue
+        if(domain.length < 10 || domain.length > 30) continue // small business domains are 10-30 chars 1. MINE REAL OLD SITES - 4 niches = 20 leads
   const niches = ['roofing','plumber','hvac','dentist']
   for(let niche of niches){
     try{

@@ -18,15 +18,16 @@ async function g(k:string){
   if(!u||!t)return null;
   const r=await fetch(`${u}/get/${k}`,{headers:{Authorization:`Bearer ${t}`}});
   const j=await r.json();if(!j.result)return null;
-  return JSON.parse(j.result);
+  let v=j.result;try{v=JSON.parse(v);}catch{};try{v=JSON.parse(v);}catch{};return v;
  }catch{return null;}
 }
-async function w(k:string,v:any){
+async function w(k:string,v:any,nx=false){
  try{
   const u=c(process.env.KV_REST_API_URL)||c(process.env.UPSTASH_REDIS_REST_URL);
   const t=c(process.env.KV_REST_API_TOKEN)||c(process.env.UPSTASH_REDIS_REST_TOKEN);
   if(!u||!t)return false;
-  const r=await fetch(`${u}/set/${k}`,{method:'POST',headers:{Authorization:`Bearer ${t}`},body:JSON.stringify(JSON.stringify(v))});
+  const url=nx?`${u}/set/${k}?NX=true`:`${u}/set/${k}`;
+  const r=await fetch(url,{method:'POST',headers:{Authorization:`Bearer ${t}`},body:JSON.stringify(JSON.stringify(v))});
   return r.ok;
  }catch{return false;}
 }
@@ -43,12 +44,14 @@ export async function GET(){
  const SK=c(process.env.SERP_API_KEY),BK=c(process.env.BREVO_API_KEY);
  try{
   let sA:any=await g('sent_emails');
-  let sS=new Set<string>((sA||[]).map((d:any)=>String(d).toLowerCase()));
-  let i:any=await g('current_state_index');if(i===null)i=0;i=Number(i);
+  let arr=Array.isArray(sA)?sA:(typeof sA==='string'?JSON.parse(sA):[]);
+  let sS=new Set<string>((arr||[]).map((d:any)=>String(d).toLowerCase()));
+  let i:any=await g('current_state_index');if(i===null||i==="")i=0;i=Number(i);
   const curS=S[i%S.length],nxt=(i+1)%S.length,nxtS=S[nxt];
   let lk:any=await g('blast_lock');
-  if(lk&&Date.now()-Number(lk)<60000)return new Response(JSON.stringify({ok:false,cur:curS,msg:`LOCKED 60s`,L}),{status:200});
-  await w('blast_lock',Date.now());
+  if(lk&&Date.now()-Number(lk)<60000)return new Response(JSON.stringify({ok:false,cur:curS,msg:`LOCKED 60s - wait`,L}),{status:200});
+  const lockOk=await w('blast_lock',Date.now(),true);
+  if(!lockOk)return new Response(JSON.stringify({ok:false,cur:curS,msg:`LOCKED NX - other blast running`,L}),{status:200});
   const all:any[]=[];
   for(const k of Object.keys(N)){
    const cfg:any=(N as any)[k];
@@ -103,6 +106,6 @@ export async function GET(){
    const html=`<!DOCTYPE html><html><body style="margin:0;padding:0;background:#ffffff;"><div style="max-width:600px;margin:0 auto;background:#ffffff;border:2px solid #0a0a0a;"><div style="padding:14px 24px;background:#0a0a0a;"><span style="font-size:13px;letter-spacing:3px;font-weight:900;color:#fff;">VENUS HQ7 • LUXURY AI</span><span style="float:right;font-size:11px;color:#D4AF37;border:1px solid #D4AF37;padding:5px 10px;border-radius:20px;font-weight:800;">${curS.toUpperCase()} • STATE ${i+1}/50</span></div><div style="padding:24px;background:#fff;"><h1 style="margin:0;font-size:26px;font-weight:900;color:#0a0a0a;">Your ${cfg.t} site in ${curS} untouched since 2001-2020.<br/>We rebuilt it for 2026.</h1></div><div style="margin:0 16px;padding:16px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;"><b>WHO WE ARE</b><br/>I'm <b>Ron Kahn</b>, Founder <b>Venus HQ7 LLC</b> — <b>2016 Blake St, Denver CO 80202, USA</b>. Expanding in <b>${curS}</b> State ${i+1}/50.</div><div style="margin:12px 16px;padding:16px;background:#FFFBEB;border:1px solid #fde68a;border-radius:12px;"><b>WHY CONTACTING YOU IN ${curS.toUpperCase()}?</b><br/>Your domain <b>${c.domain}</b> popular ${curS} ${cfg.t} but untouched 2001-2020 (${c.reason}). Built free 2026 preview for ${curS}. One-time. STOP=never 50 states.</div><div style="padding:16px;background:#fff;"><div style="border:2px solid #0a0a0a;border-radius:14px;overflow:hidden;"><div style="padding:16px;background:#fff;"><div style="font-size:11px;font-weight:800;color:#666;">YOUR CURRENT OLD SITE</div><div style="margin-top:8px;padding:12px;background:#f3f4f6;border-radius:8px;font-weight:600;word-break:break-all;color:#111;">${oldL}</div><a href="${oldL}" style="display:inline-block;margin-top:12px;background:#fff;color:#0a0a0a;border:2px solid #0a0a0a;padding:12px 20px;text-decoration:none;font-weight:800;border-radius:8px;">🔗 OPEN YOUR CURRENT SITE →</a></div><div style="padding:18px;background:#0a0a0a;border-top:3px solid #D4AF37;"><div style="font-size:12px;font-weight:900;color:#D4AF37;letter-spacing:2px;">✨ NEW 2026 AI REBUILD - FREE PREVIEW - ${curS.toUpperCase()} ✨</div><div style="margin-top:12px;padding:14px;background:#1a1a1a;border-radius:10px;border:1px solid #D4AF37;text-align:center;"><a href="${newL}" style="color:#D4AF37;font-size:18px;font-weight:900;text-decoration:none;display:block;">👉 CLICK HERE - YOUR NEW WEBSITE</a><div style="color:#aaa;font-size:11px;margin-top:8px;word-break:break-all;">${newL}</div></div><a href="${newL}" style="display:block;margin-top:16px;text-align:center;background:#D4AF37;color:#000000;padding:20px;text-decoration:none;font-weight:900;border-radius:12px;font-size:18px;letter-spacing:1px;border:3px solid #000;">⭐ VIEW YOUR NEW ${curS.toUpperCase()} WEBSITE →</a><div style="text-align:center;color:#D4AF37;font-size:12px;margin-top:10px;font-weight:700;">↑ GOLD BUTTON - VISIBLE IN DARK MODE ↑</div></div></div></div><div style="padding:16px 24px 0;background:#fff;"><b>WHAT WE DO IN ${curS.toUpperCase()} - 5 AI + VENUS OS</b><table width="100%" style="margin-top:10px;">${cfg.l.map((t:any,j:number)=>`<tr><td style="padding:12px 0;border-bottom:1px solid #eee;"><span style="background:#0a0a0a;color:#D4AF37;padding:5px 10px;border-radius:20px;margin-right:10px;font-weight:800;">0${j+1}</span><b>${t.n} for ${curS}</b> - ${t.d}</td></tr>`).join('')}</table></div><div style="margin:20px 16px;padding:20px;border:3px dashed #D4AF37;background:#FFFBEB;border-radius:14px;text-align:center;"><div style="font-size:11px;font-weight:900;color:#92400e;">24H ACTIVATION - ${curS.toUpperCase()} - STATE ${i+1}/50 - NEXT ${nxtS.toUpperCase()}</div><div style="margin-top:8px;"><span style="text-decoration:line-through;color:#999;">$1,997</span><span style="font-size:38px;font-weight:900;margin-left:12px;color:#0a0a0a;">$497</span></div><a href="${newL}" style="display:block;margin-top:12px;background:#0a0a0a;color:#fff;padding:16px;text-decoration:none;font-weight:900;border-radius:10px;">ACTIVATE FOR ${curS.toUpperCase()} → $497</a></div><div style="padding:0 24px 30px;background:#fff;"><a href="https://wa.me/17865880578?text=Activate%20${c.domain}%20${curS}%20$497" style="display:block;text-align:center;background:#25D366;color:#fff;padding:18px;text-decoration:none;font-weight:900;border-radius:10px;">WHATSAPP $497 - ${curS.toUpperCase()} →</a><p style="font-size:11px;color:#777;margin-top:20px;border-top:2px solid #000;padding-top:14px;">Venus HQ7 LLC - Denver - Mining ${curS} - Next: ${nxtS} - State ${i+1}/50<br/>BCC: venusailux@gmail.com. STOP=never 50 states. No repeat + 15 blacklist.</p></div></div></body></html>`;
    try{const r=await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':BK,'Content-Type':'application/json'},body:JSON.stringify({sender:{name:`Ron Kahn - Venus HQ7 - ${cfg.t} ${curS}`,email:'ron@venushq7.com'},to:[{email:c.email}],bcc:[{email:'venusailux@gmail.com'}],subject:subj,htmlContent:html})});if(r.status===201){R.push(c.domain);tot++;}}catch{}
   }
-  return new Response(JSON.stringify({ok:true,curS,nxtS,i,nxt,tot,R,L,msg:`V27 GOLD 60s lock: Mined ${curS} -> next ${nxtS}.`}),{status:200});
+  return new Response(JSON.stringify({ok:true,curS,nxtS,i,nxt,tot,R,L,msg:`V28 NX GOLD: Mined ${curS} -> next ${nxtS}. Double parse fix.`}),{status:200});
  }catch(e:any){return new Response(JSON.stringify({ok:false,error:e.message,L}),{status:500});}
 }

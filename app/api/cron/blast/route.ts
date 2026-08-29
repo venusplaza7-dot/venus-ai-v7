@@ -13,14 +13,13 @@ async function g(k:string){
   let v=j.result;try{v=JSON.parse(v);}catch{};try{v=JSON.parse(v);}catch{};return v;
  }catch{return null;}
 }
-async function w(k:string,v:any,nx=false){
+async function w(k:string,v:any){
  try{
   const u=c(process.env.KV_REST_API_URL)||c(process.env.UPSTASH_REDIS_REST_URL);
   const t=c(process.env.KV_REST_API_TOKEN)||c(process.env.UPSTASH_REDIS_REST_TOKEN);
   if(!u||!t)return false;
-  const url=nx?`${u}/set/${k}?NX=true&EX=90`:`${u}/set/${k}`;
-  const r=await fetch(url,{method:'POST',headers:{Authorization:`Bearer ${t}`},body:JSON.stringify(JSON.stringify(v))});
-  return r.ok;
+  const r=await fetch(`${u}/set/${k}`,{method:'POST',headers:{Authorization:`Bearer ${t}`},body:JSON.stringify(JSON.stringify(v))});
+  const txt=await r.text();return r.ok;
  }catch{return false;}
 }
 async function d(k:string){
@@ -41,8 +40,8 @@ export async function GET(){
   let sS=new Set<string>((arr||[]).map((d:any)=>String(d).toLowerCase()));
   let i:any=await g('current_state_index');if(i===null||i==="")i=0;i=Number(i);
   const curS=S[i%S.length],nxt=(i+1)%S.length,nxtS=S[nxt];
-  let lk:any=await g('blast_lock');if(lk&&Date.now()-Number(lk)<60000)return new Response(JSON.stringify({ok:false,cur:curS,msg:`LOCKED 60s`,i}),{status:200});
-  const lockOk=await w('blast_lock',Date.now(),true);if(!lockOk)return new Response(JSON.stringify({ok:false,cur:curS,msg:`LOCKED NX - wait 90 sec then delete lock`,i}),{status:200});
+  let lk:any=await g('blast_lock');if(lk&&Date.now()-Number(lk)<60000)return new Response(JSON.stringify({ok:false,cur:curS,msg:`LOCKED 60s wait`,i,lk}),{status:200});
+  await w('blast_lock',Date.now());
   const all:any[]=[];
   for(const k of Object.keys(N)){const cfg:any=(N as any)[k];for(const q of cfg.q(curS)){try{const u=`https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(q)}&num=10&api_key=${SK}`;const r=await fetch(u);const d=await r.json();for(const rr of (d.organic_results||[])){try{const dm=new URL((rr as any).link).hostname.replace('www.','').toLowerCase();if(dm)all.push({domain:dm,niche:k});}catch{}}}catch{}}}
   const byO:any={roofing:[],plumber:[],hvac:[],electrical:[],dentist:[]};const se=new Set<string>();
@@ -60,6 +59,6 @@ export async function GET(){
    try{const r=await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':BK,'Content-Type':'application/json'},body:JSON.stringify({sender:{name:`Ron Kahn - Venus HQ7 - ${cfg.t} ${curS}`,email:'ron@venushq7.com'},to:[{email:c.email}],bcc:[{email:'venusailux@gmail.com'}],subject:subj,htmlContent:html})});if(r.status===201){R.push(c.domain);tot++;}}catch{}
   }
   await d('blast_lock');
-  return new Response(JSON.stringify({ok:true,curS,nxtS,i,nxt,tot,R,msg:`V30 FIX: Mined ${curS} -> next ${nxtS}. Lock auto-deleted + EX 90s.`}),{status:200});
+  return new Response(JSON.stringify({ok:true,curS,nxtS,i,nxt,tot,R,msg:`V31 NO-NX FIX: Mined ${curS} -> next ${nxtS}. Write token fixed.`}),{status:200});
  }catch(e:any){await d('blast_lock');return new Response(JSON.stringify({ok:false,error:e.message,L}),{status:500});}
 }

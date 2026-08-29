@@ -1,87 +1,241 @@
-export const dynamic = 'force-dynamic'
-import { kv } from '@vercel/kv'
+export const dynamic = 'force-dynamic';
+import { kv } from '@vercel/kv';
 
-const NICHE_CONFIG:any = {
-  roofing: { q:'houston roofing company old website', must:['roof'], color:'#000', tools:'01 AI Roof Quote<br>02 Leak Scanner<br>03 Missed-Call<br>04 Reviews<br>05 Venus OS', title:'Roofing' },
-  plumber: { q:'houston plumber old website', must:['plumb'], color:'#0a2540', tools:'01 Plumbing Quote<br>02 Emergency Booking<br>03 Missed-Call<br>04 Reviews<br>05 Venus OS', title:'Plumbing' },
-  hvac: { q:'houston hvac ac old website', must:['hvac','air','heat','cool'], color:'#1a4d2e', tools:'01 HVAC Quote<br>02 Tune-up Booking<br>03 Missed-Call<br>04 Reviews<br>05 Venus OS', title:'HVAC' },
-  electrical: { q:'houston electrician electrical old website', must:['electric'], color:'#f59e0b', tools:'01 Electrical Quote<br>02 Panel Estimator<br>03 Missed-Call<br>04 Reviews<br>05 Venus OS', title:'Electrical' },
-  dentist: { q:'houston dentist dental old website', must:['dental','dentist','smile'], color:'#581c87', tools:'01 Smile Booking<br>02 Insurance Check<br>03 Missed-Call<br>04 Reviews<br>05 Venus OS', title:'Dental' }
-}
+const NICHE_CONFIG: Record<string, { q: string; must: string[]; color: string; title: string; tools: string[]; subject: string }> = {
+  roofing: {
+    q: 'roofing contractor Houston Texas site:.com',
+    must: ['roof'],
+    color: '#0f172a',
+    title: 'Roofing',
+    subject: 'Roofing',
+    tools: ['AI Roof Quote Estimator', 'Leak Scanner AI Upload', 'Missed-Call Text-Back AI', 'Review Auto-Responder AI', 'Venus OS CRM Dashboard'],
+  },
+  plumber: {
+    q: 'plumber Houston Texas site:.com',
+    must: ['plumb'],
+    color: '#0c4a6e',
+    title: 'Plumbing',
+    subject: 'Plumbing',
+    tools: ['Emergency Plumber AI Dispatch', 'Leak Price Calculator AI', 'Missed-Call Text-Back AI', 'Review Booster AI', 'Venus OS Jobs CRM'],
+  },
+  hvac: {
+    q: 'HVAC contractor Houston Texas site:.com',
+    must: ['hvac', 'air', 'heat', 'cool', 'ac'],
+    color: '#1e3a8a',
+    title: 'HVAC',
+    subject: 'HVAC',
+    tools: ['AC Repair Quote AI', 'Duct Cost Estimator AI', 'Missed-Call AI Closer', 'Google Review AI', 'Venus OS Scheduler'],
+  },
+  electrical: {
+    q: 'electrician Houston Texas site:.com',
+    must: ['electr'],
+    color: '#422006',
+    title: 'Electrical',
+    subject: 'Electrical',
+    tools: ['Electrical Quote AI', 'Panel Upgrade Calculator', 'Emergency Call AI', 'Review Engine AI', 'Venus OS Invoicing'],
+  },
+  dentist: {
+    q: 'dentist Houston Texas site:.com',
+    must: ['dental', 'dentist', 'smile', 'tooth'],
+    color: '#064e3b',
+    title: 'Dental',
+    subject: 'Dental',
+    tools: ['Smile Scan AI Booking', 'Implant Price Estimator', 'No-Show Rescue AI', 'Review Growth AI', 'Venus OS Patient CRM'],
+  },
+};
 
-export async function GET(){
-  const SERP_KEY = process.env.SERP_API_KEY
-  const BREVO_KEY = process.env.BREVO_API_KEY
-  const SENDER = 'ron@venushq7.com'
-  const BCC = 'venusailux@gmail.com'
+const JUNK = [
+  'yelp.com', 'facebook.com', 'linkedin.com', 'instagram.com', 'youtube.com',
+  'bestpickreports.com', 'serviceagent.ai', 'google.com', 'decra.com',
+  'roofing.net', 'angi.com', 'homeadvisor.com', 'thumbtack.com', 'bbb.org',
+  'wikipedia.org', 'amazon.com', 'houzz.com', 'porch.com', 'yelp', 'facebook'
+];
 
-  let logs:any[] = []
-  let mined:any[] = []
+export async function GET() {
+  const logs: string[] = [];
+  const mined: { domain: string; niche: string; email: string }[] = [];
+  const newlySent: string[] = [];
 
-  // LOAD ALREADY SENT FROM KV
-  let sentList:string[] = []
-  try{ sentList = await kv.get('sent_emails') || [] }catch{ logs.push('KV not connected yet - will create now') }
-  const sentSet = new Set(sentList)
-  logs.push(`Already sent to ${sentSet.size} domains - will skip them`)
-
-  const JUNK = ['yelp','facebook','instagram','yellowpages','angi','thumbtack','bbb.org','homeadvisor','houzz','bestpick','linkedin','wikipedia','amazon','youtube','google.com','serviceagent','decra.com','owenscorning','gaf.com','roofing.net']
-
-  for(let nicheKey of Object.keys(NICHE_CONFIG)){
-    const cfg = NICHE_CONFIG[nicheKey]
-    try{
-      const url = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(cfg.q)}&num=10&api_key=${SERP_KEY}`
-      const r = await fetch(url, {signal: AbortSignal.timeout(12000)})
-      const data:any = await r.json()
-      for(let item of (data.organic_results||[])){
-        let domain = ''
-        try{ domain = new URL(item.link).hostname.replace('www.','') }catch{ continue }
-        if(JUNK.some(x=>domain.includes(x))) continue
-        if(domain.endsWith('.ai') || domain.endsWith('.io')) continue
-        if(!cfg.must.some((m:string)=>domain.toLowerCase().includes(m))) continue
-        // DEDUPLICATION - THIS FIXES YOUR COMPLAINT
-        if(sentSet.has(domain)) { logs.push(`SKIP already sent: ${domain}`); continue }
-        if(mined.some(m=>m.domain===domain)) continue
-
-        const business = item.title.split(/[-|]/)[0].trim().slice(0,35) || domain.split('.')[0]
-        mined.push({
-          business, domain, niche:nicheKey, nicheTitle:cfg.title,
-          email:`info@${domain}`, oldLink:item.link,
-          link:`https://venus-ai-v8.vercel.app/o/${domain.replace(/\./g,'-')}-${Date.now().toString().slice(-4)}?niche=${nicheKey}`,
-          id:`${nicheKey}-${domain}-${Date.now()}`, color:cfg.color, tools:cfg.tools
-        })
-        if(mined.length >= 20) break
+  try {
+    // 1. KV GET
+    let sentSet = new Set<string>();
+    try {
+      const existing = await kv.get<string[]>('sent_emails');
+      if (existing && Array.isArray(existing)) {
+        sentSet = new Set(existing.map(d => d.toLowerCase()));
       }
-    }catch(e:any){ logs.push(`${nicheKey} FAIL: ${e.message}`) }
-    if(mined.length >= 20) break
-  }
-
-  let totalSent = 0
-  let newlySent:string[] = []
-  for(let lead of mined.slice(0,5)){
-    const wa = `https://wa.me/17865880578?text=${encodeURIComponent(`Hi ${lead.business}! ${lead.domain} rebuilt: ${lead.link} $497 24H`)}`
-    const html = `<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:24px;border:1px solid #e5e5e5;overflow:hidden;font-family:Arial"><div style="background:${lead.color};padding:20px 32px;color:#fff;font-weight:900">VENUS HQ7 • ${lead.nicheTitle.toUpperCase()} • ${lead.domain}</div><div style="padding:24px 32px"><div style="background:#fef3c7;display:inline-block;padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700">${lead.nicheTitle} OLD SITE: ${lead.domain}</div><h1 style="font-size:24px;font-weight:900">We found ${lead.domain}<br>Rebuilt for ${lead.business}</h1><div style="display:flex;gap:10px;margin:12px 0"><div style="flex:1;background:#fafafa;border:1px solid #eee;border-radius:12px;padding:10px;font-size:11px">OLD: ${lead.oldLink}</div><div style="flex:1;background:#000;color:#fff;border-radius:12px;padding:10px;font-size:11px">NEW: ${lead.link}</div></div><div style="margin-top:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;font-size:13px">${lead.tools}</div><div style="margin-top:16px;border:2px dashed #D4AF37;border-radius:16px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:900"><span style="text-decoration:line-through;color:#ccc;font-size:18px">$1997</span> $497</div><a href="${lead.link}" style="display:block;margin-top:12px;background:#000;color:#fff;padding:12px;border-radius:999px;font-weight:900;text-decoration:none">VIEW ${lead.nicheTitle} SITE →</a><a href="${wa}" style="display:block;margin-top:8px;background:#25D366;color:#000;padding:12px;border-radius:999px;font-weight:900;text-decoration:none">WHATSAPP $497</a></div></div><div style="background:#fafafa;padding:10px 32px;font-size:10px;color:#999">Reply STOP to opt-out. Venus HQ7 Denver - ron@venushq7.com</div></div></div>`
-
-    const res = await fetch('https://api.brevo.com/v3/smtp/email',{
-      method:'POST', headers:{'api-key': BREVO_KEY||'', 'Content-Type':'application/json'},
-      body: JSON.stringify({sender:{name:`Ron - Venus ${lead.nicheTitle}`, email:SENDER}, to:[{email: lead.email}], bcc:[{email:BCC}], subject:`${lead.business} - ${lead.domain} ${lead.nicheTitle} rebuilt $497`, htmlContent: html, tags:[lead.niche]})
-    })
-    if(res.ok){
-      totalSent++
-      newlySent.push(lead.domain)
-      logs.push(`SENT + SAVED to KV: ${lead.domain} (${lead.niche})`)
-    } else {
-      logs.push(`FAIL ${lead.domain}: ${res.status}`)
+      logs.push(`KV loaded: ${sentSet.size} already sent`);
+    } catch (e: any) {
+      logs.push(`KV load failed (first run ok): ${e.message}`);
     }
-  }
 
-  // SAVE NEWLY SENT TO KV - NEVER SEND AGAIN
-  if(newlySent.length > 0){
-    try{
-      const updated = [...sentList,...newlySent]
-      await kv.set('sent_emails', updated)
-      logs.push(`KV UPDATED: ${updated.length} total domains blacklisted from resend`)
-    }catch(e:any){ logs.push(`KV SAVE FAIL: ${e.message} - Add KV database in Vercel Storage`) }
-  }
+    // 2. MINE via SERPAPI
+    const allDomains: { domain: string; niche: string }[] = [];
+    for (const [nicheKey, cfg] of Object.entries(NICHE_CONFIG)) {
+      try {
+        const url = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(cfg.q)}&num=10&api_key=${process.env.SERP_API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const results = data.organic_results || [];
+        for (const r of results) {
+          try {
+            const domain = new URL(r.link).hostname.replace('www.', '').toLowerCase();
+            if (domain) allDomains.push({ domain, niche: nicheKey });
+          } catch {}
+        }
+        logs.push(`SERP ${nicheKey}: ${results.length} results`);
+      } catch (e: any) {
+        logs.push(`SERP ${nicheKey} error: ${e.message}`);
+      }
+    }
 
-  return Response.json({ok:true, totalSent, alreadySentCount: sentSet.size, newlySent, mined: mined.slice(0,5).map(m=>({domain:m.domain, niche:m.niche})), logs, msg:`Never sends twice - KV remembers ${sentSet.size + newlySent.length} domains. Next run will skip ${newlySent.join(', ')}`})
+    // 3. FILTER
+    const candidates: { domain: string; niche: string; email: string }[] = [];
+    const seenThisRun = new Set<string>();
+
+    for (const item of allDomains) {
+      const d = item.domain;
+      const nicheKey = item.niche;
+      const cfg = NICHE_CONFIG[nicheKey];
+      if (JUNK.some(j => d.includes(j))) { logs.push(`SKIP junk ${d}`); continue; }
+      if (d.endsWith('.ai') || d.endsWith('.io')) { logs.push(`SKIP.ai/.io ${d}`); continue; }
+      if (d.length < 8 || d.length > 35) { logs.push(`SKIP length ${d}`); continue; }
+      if (seenThisRun.has(d)) continue;
+      seenThisRun.add(d);
+      const mustOk = cfg.must.some(m => d.includes(m));
+      if (!mustOk) { logs.push(`SKIP wrong category ${d} for ${nicheKey}`); continue; }
+      if (sentSet.has(d)) { logs.push(`SKIP already sent in KV ${d}`); continue; }
+      const email = `info@${d}`;
+      candidates.push({ domain: d, niche: nicheKey, email });
+      mined.push({ domain: d, niche: nicheKey, email });
+    }
+
+    // 4. SEND 5 per run - V13 LUXURY WHITE TEMPLATE
+    const toSend = candidates.slice(0, 5);
+    let totalSent = 0;
+
+    for (const c of toSend) {
+      const cfg = NICHE_CONFIG[c.niche];
+      const oldLink = `https://${c.domain}`;
+      const newLink = `https://venus-ai-v8.vercel.app/o/${c.domain}?niche=${c.niche}`;
+      const subject = `${c.domain} - Your ${cfg.title} website preview is ready (2008 -> 2026)`;
+
+      const html = `
+<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f6f6f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+<div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;">
+
+  <div style="padding:14px 24px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:12px;letter-spacing:3px;font-weight:900;color:#0a0a0a;">VENUS HQ7</span>
+    <span style="font-size:10px;color:#999;">VENUS AI LAB • DENVER, CO</span>
+  </div>
+
+  <div style="padding:32px 28px 18px 28px;">
+    <p style="margin:0 0 10px 0;font-size:11px;letter-spacing:2px;color:#D4AF37;font-weight:800;">COMPLIMENTARY PREVIEW FOR ${c.domain.toUpperCase()}</p>
+    <h1 style="margin:0;font-size:27px;line-height:33px;font-weight:900;color:#0a0a0a;">
+      Your site ${c.domain} is from 2008.<br/>We rebuilt it for 2026.
+    </h1>
+    <p style="margin:16px 0 0 0;font-size:14px;line-height:23px;color:#333;">
+      Hi — I'm <b>Ron Kahn</b>, Founder of <b>Venus HQ7</b> (IT Corp Inc, 2016 Blake St, Denver CO 80202).<br/><br/>
+      <b>Who we are:</b> We are not an agency. We are a Gen-Z Luxury AI Lab that scans old gold contractor sites in Houston and rebuilds them with AI tools that actually book jobs.<br/><br/>
+      <b>Why you got this:</b> Your domain <b>${c.domain}</b> appeared as an older site losing mobile customers. As a courtesy, we made you a live AI preview. No charge, no obligation — just a preview to see if you want it.
+    </p>
+  </div>
+
+  <div style="padding:0 16px;">
+    <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+      <div style="padding:12px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#888;">YOUR CURRENT SITE</div>
+        <a href="${oldLink}" style="display:block;margin-top:4px;color:#555;font-size:13px;word-break:break-all;text-decoration:underline;">${oldLink}</a>
+      </div>
+      <div style="padding:14px 16px;background:#0a0a0a;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#D4AF37;">NEW AI REBUILD - LIVE PREVIEW (FREE TO VIEW)</div>
+        <a href="${newLink}" style="display:block;margin-top:6px;color:#ffffff;font-size:14px;font-weight:700;word-break:break-all;text-decoration:underline;">${newLink}</a>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:24px 28px 0 28px;">
+    <h3 style="margin:0 0 12px 0;font-size:11px;letter-spacing:2px;color:#111;">WHAT WE BUILT FOR YOUR ${cfg.title.toUpperCase()} BUSINESS</h3>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      ${cfg.tools.map((t,i) => `
+        <tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;">
+          <span style="background:#0a0a0a;color:#D4AF37;font-size:10px;padding:3px 8px;border-radius:99px;margin-right:10px;font-weight:800;">0${i+1}</span>
+          <span style="font-size:13px;color:#111;font-weight:600;">${t}</span>
+        </td></tr>`).join('')}
+    </table>
+    <p style="font-size:13px;color:#555;line-height:20px;margin:16px 0 0 0;">
+      <b>Venus OS:</b> All leads, calls, quotes, and reviews in one dashboard. Missed-call auto text-back so you never lose a job again.
+    </p>
+  </div>
+
+  <div style="margin:20px 16px;padding:18px;border:2px dashed #D4AF37;background:#FFFBEB;border-radius:12px;text-align:center;">
+    <div style="font-size:10px;letter-spacing:2px;color:#92400e;font-weight:800;">24H ACTIVATION • ONE-TIME OFFER</div>
+    <div style="margin:8px 0 0 0;"><span style="text-decoration:line-through;color:#999;font-size:16px;">$1,997</span><span style="font-size:30px;font-weight:900;margin-left:10px;color:#0a0a0a;">$497</span></div>
+    <div style="font-size:12px;color:#666;margin-top:4px;">No monthly fee. You own it. We go live in 24 hours.</div>
+  </div>
+
+  <div style="padding:18px 28px 32px 28px;">
+    <a href="${newLink}" style="display:block;text-align:center;background:#0a0a0a;color:#fff;padding:18px;text-decoration:none;font-weight:800;font-size:14px;letter-spacing:0.5px;border-radius:8px;">VIEW YOUR REBUILT WEBSITE →</a>
+    <a href="https://wa.me/17865880578?text=Hi%20Ron%20-%20Activate%20${c.domain}%20for%20$497%20-%20Preview:%20${encodeURIComponent(newLink)}" style="display:block;text-align:center;background:#ffffff;color:#0a0a0a;border:2px solid #0a0a0a;padding:16px;text-decoration:none;font-weight:800;font-size:14px;letter-spacing:0.5px;border-radius:8px;margin-top:12px;">WHATSAPP: ACTIVATE FOR $497 →</a>
+
+    <div style="margin-top:28px;padding-top:18px;border-top:1px solid #eee;">
+      <p style="margin:0 0 8px 0;font-size:12px;font-weight:700;color:#111;">Ron Kahn | Venus HQ7 LLC</p>
+      <p style="margin:0;font-size:11px;color:#999;line-height:18px;">
+        IT Corp Inc - 2016 Blake St, Denver CO 80202, USA<br/>
+        From: Ron@venushq7.com | WhatsApp: +1 (786) 588-0578<br/>
+        BCC: venusailux@gmail.com (proof of delivery)<br/><br/>
+        You received this because <b>${c.domain}</b> is a publicly listed business with a website that appears outdated. This is a one-time courtesy preview. If not relevant, reply STOP and we will never contact you again. This is not affiliated with Google, Yelp, or ${c.domain}.
+      </p>
+    </div>
+  </div>
+
+</div>
+</body></html>`;
+
+      try {
+        const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: { 'api-key': process.env.BREVO_API_KEY!, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sender: { name: 'Ron Kahn - Venus HQ7', email: 'ron@venushq7.com' },
+            to: [{ email: c.email }],
+            bcc: [{ email: 'venusailux@gmail.com' }],
+            subject,
+            htmlContent: html,
+          }),
+        });
+        const brevoData = await brevoRes.json();
+        if (brevoRes.status === 201) {
+          logs.push(`BREVO to ${c.email}: 201 relay.mailin.fr id ${brevoData.messageId} - ${c.domain}`);
+          newlySent.push(c.domain);
+          sentSet.add(c.domain.toLowerCase());
+          totalSent++;
+        } else {
+          logs.push(`BREVO FAIL to ${c.email}: ${brevoRes.status} ${JSON.stringify(brevoData)}`);
+        }
+      } catch (e: any) {
+        logs.push(`BREVO ERROR ${c.email}: ${e.message}`);
+      }
+    }
+
+    try {
+      await kv.set('sent_emails', Array.from(sentSet));
+      logs.push(`KV UPDATED: ${sentSet.size} total, +${newlySent.length} new`);
+    } catch (e: any) {
+      logs.push(`KV SAVE FAIL: ${e.message}`);
+    }
+
+    return new Response(JSON.stringify({
+      ok: true,
+      totalSent,
+      alreadySentCount: sentSet.size - newlySent.length,
+      newlySent,
+      mined: mined.slice(0, 10),
+      logs,
+      msg: `V13 Luxury White - Sent ${totalSent} new`
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+
+  } catch (e: any) {
+    return new Response(JSON.stringify({ ok: false, error: e.message, logs }), { status: 500 });
+  }
 }

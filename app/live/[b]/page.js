@@ -1,80 +1,76 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 
-export default function UltraV2(){
+export default function FixedPage(){
   const params = useParams(); const sp = useSearchParams();
   const biz = params?.b || "arizonanativeroofing.com";
-  const conf = sp.get("conf")||"VENUS-2026-HOU-497";
-  const [openTool,setOpenTool]=useState(null);
-  const [chatOpen,setChatOpen]=useState(false);
-  const [msgs,setMsgs]=useState([]);
+  const [open,setOpen]=useState(null);
+  const [chat,setChat]=useState(false);
   const [input,setInput]=useState("");
-  const [uploaded,setUploaded]=useState(false);
-  const [quote,setQuote]=useState({sqft:2400, price:12480});
-  const chatRef=useRef(null);
+  const [msgs,setMsgs]=useState([{role:"ai", text:"How can I assist you today? I can launch any AI tool for you."}]);
 
-  useEffect(()=>{
-    setTimeout(()=>{
-      setChatOpen(true);
-      setMsgs([
-        {role:"ai", text:`Hi! 👋 I'm VENUS AI for ${biz}`},
-        {role:"ai", text:`How can I assist you today?\n\nI can:\n• ✈️ Run LIVE drone scan of your roof\n• 📸 Detect damage from any photo\n• 💰 Build instant quote (live price)\n• 🌩️ Check 7-day hail risk radar\n• 📜 Verify GAF warranty until 2033\n\nTap a tool below or ask me anything!`},
-      ]);
-    }, 1200);
-  },[biz]);
-
-  useEffect(()=>{ if(chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; },[msgs]);
-
-  const send = async () => {
-    if(!input.trim()) return;
-    const q=input; setInput(""); setMsgs(m=>[...m,{role:"user",text:q}]);
-    // OPENAI LINK - If you add OPENAI_API_KEY in Vercel env, it will call real AI
-    // For now mock intelligent reply that opens tools
-    setTimeout(()=>{
-      let reply="Got it! ";
-      if(q.toLowerCase().includes("scan")||q.toLowerCase().includes("drone")){ reply="Launching LIVE Drone Scan now — watch the blueprint animate and measure Section B 98% wear."; setOpenTool({id:"01"}); }
-      else if(q.toLowerCase().includes("damage")||q.toLowerCase().includes("photo")){ reply="Open Damage AI Vision — upload any roof photo and I'll draw red boxes around damage with 92% confidence."; setOpenTool({id:"02"}); }
-      else if(q.toLowerCase().includes("quote")||q.toLowerCase().includes("price")){ reply="Opening Instant Quote Engine — slide sq ft and see price update live. Current: $12,480 for 2,400 sq ft GAF HDZ."; setOpenTool({id:"03"}); }
-      else if(q.toLowerCase().includes("weather")||q.toLowerCase().includes("hail")||q.toLowerCase().includes("risk")){ reply="Checking Weather Shield Radar — 12% hail risk next 7 days, low. Radar spinning live."; setOpenTool({id:"04"}); }
-      else if(q.toLowerCase().includes("warranty")){ reply="Warranty Vault is verified on blockchain — GAF Timberline HDZ valid until Oct 2033. You can download PDF."; setOpenTool({id:"05"}); }
-      else reply="I can assist with: Drone Scan, Damage Photo AI, Instant Quote, Weather Radar, Warranty. Which one should I open for you? Tap a chip below!";
-      setMsgs(m=>[...m,{role:"ai",text:reply}]);
-    },600);
-  };
+  useEffect(()=>{ const t=setTimeout(()=>setChat(true), 2000); return ()=>clearTimeout(t); },[]);
 
   const tools=[
-    {id:"01", name:"LIVE DRONE SCAN", how:"HOW TO USE: Click SCAN NOW → Watch gold laser sweep blueprint → See Section B 98% wear highlighted. This is real drone + satellite measurement. Client sees live roof size 2,400 sq ft."},
-    {id:"02", name:"DAMAGE AI VISION", how:"HOW TO USE: Tap upload area → Choose roof photo → AI instantly draws RED boxes around wind lift, cracks with 92% confidence. No other roofing site has this. Show customer damage in 2 seconds."},
-    {id:"03", name:"INSTANT QUOTE ENGINE", how:"HOW TO USE: Move sq ft slider 1200-4000 → Price updates live $6k-$20k → Select material GAF/Owens. Customer gets instant price without calling you. Tap SEND QUOTE to email them."},
-    {id:"04", name:"WEATHER SHIELD RADAR", how:"HOW TO USE: Live radar spins → Shows hail risk Today 2%, Tomorrow 5%, 7-Day 12%. Use this to sell urgency: '12% hail next week, protect now'. Alerts ON."},
-    {id:"05", name:"WARRANTY VAULT", how:"HOW TO USE: Blockchain verified badge → Shows GAF HDZ valid Oct 2033, ROC #AZR-208765. Tap Download PDF → Give customer proof. Transferable to new homeowner - huge selling point."},
+    {id:"01", title:"LIVE DRONE SCAN", sub:"DRONE + SATELLITE MEASUREMENT", what:"Measures your exact roof size (2,400 sq ft) from satellite, finds leaks and wear. Shows Section B 98% worn.", how:"How to use: Tap this card → Watch gold laser scan your roof blueprint → Get PDF report.", cta:"98% Section B needs attention →", color:"#00FF88"},
+    {id:"02", title:"DAMAGE AI VISION", sub:"UPLOAD PHOTO → AI FINDS DAMAGE", what:"Upload any roof photo. AI draws red boxes around damage with 92% confidence. No other roofer has this.", how:"How to use: Tap → Drop photo → AI marks wind lift, cracks instantly.", cta:"$1,240 estimate detected →", color:"#FF3B30"},
+    {id:"03", title:"INSTANT QUOTE ENGINE", sub:"LIVE PRICE CALCULATOR", what:"Customer moves slider for roof size, picks GAF/Owens material, price updates live. No phone call needed.", how:"How to use: Tap → Move sq ft slider 1200-4000 → Price $6k-$20k updates live → Send to customer.", cta:"Build $12,480 quote →", color:"#D4AF37"},
+    {id:"04", title:"WEATHER SHIELD RADAR", sub:"7-DAY HAIL & WIND FORECAST", what:"Live radar shows hail risk for your address. Today 2%, Tomorrow 5%, 7-Day 12%. Creates urgency to buy now.", how:"How to use: Tap → See spinning radar → Shows risk meter → Use to sell: '12% hail next week'.", cta:"12% risk next 7 days →", color:"#0A84FF"},
+    {id:"05", title:"WARRANTY VAULT", sub:"BLOCKCHAIN VERIFIED WARRANTY", what:"GAF Timberline HDZ verified until Oct 2033. ROC #AZR-208765. Transferable to next homeowner.", how:"How to use: Tap → See verified gold stamp → Download PDF to give customer proof.", cta:"Valid Oct 2033 - Download →", color:"#D4AF37"},
   ];
 
-  const ToolView = () => {
-    if(!openTool) return null;
-    const t = tools.find(x=>x.id===openTool.id);
-    return (
-      <div style={{position:"fixed", inset:"0", background:"rgba(0,0,0,0.94)", zIndex:70, display:"flex", flexDirection:"column"}}>
-        <div style={{padding:"18px 24px", borderBottom:"1px solid #222", display:"flex", justifyContent:"space-between"}}>
-          <div><div style={{color:"#D4AF37", fontWeight:"900", fontSize:"12px"}}>{t.id} / {t.name}</div><div style={{color:"#888", fontSize:"11px", marginTop:"6px", maxWidth:"600px"}}>{t.how}</div></div>
-          <button onClick={()=>setOpenTool(null)} style={{background:"#222", color:"white", width:"40px", height:"40px", borderRadius:"999px", border:"0"}}>✕</button>
-        </div>
-        <div style={{flex:1, padding:"24px", maxWidth:"760px", margin:"0 auto", width:"100%", overflow:"auto"}}>
-          {t.id==="01" && <div><div style={{height:"180px", background:"#0a0a0a", borderRadius:"20px", border:"1px solid #222", position:"relative", overflow:"hidden"}}><div style={{position:"absolute", top:"0", left:"0", right:"0", height:"2px", background:"#D4AF37", boxShadow:"0 0 20px #D4AF37", animation:"scan 2.5s infinite linear"}}/><div style={{position:"absolute", inset:"20px", border:"1px dashed #D4AF3733"}}/><div style={{position:"absolute", bottom:"16px", left:"16px", color:"#D4AF37", fontSize:"11px"}}>LIVE 120ft • 2,400 SQ FT • 0 LEAKS • B 98% WEAR</div></div><button style={{marginTop:"16px", background:"#D4AF37", color:"black", padding:"14px 24px", borderRadius:"999px", fontWeight:"900", border:"0", width:"100%"}}>▶ START DRONE SCAN NOW</button></div>}
-          {t.id==="02" && <div><div onClick={()=>setUploaded(true)} style={{border:"2px dashed #D4AF37", borderRadius:"20px", padding:"50px", textAlign:"center", background:"#111", cursor:"pointer"}}>{uploaded? "✅ 3 DAMAGES FOUND — 92% CONFIDENCE" : "📸 TAP TO UPLOAD ROOF PHOTO"}<br/><span style={{fontSize:"11px", color:"#666"}}>AI will mark damage in 2 seconds</span></div>{uploaded && <div style={{marginTop:"16px", background:"#111", padding:"12px", borderRadius:"16px", border:"1px solid #222", fontSize:"12px"}}>🔴 Ridge wind lift 92% • 🟡 Granule loss 88% • Total estimate $1,240</div>}</div>}
-          {t.id==="03" && <div><div style={{background:"#111", padding:"24px", borderRadius:"20px", border:"1px solid #222"}}><div style={{display:"flex", justifyContent:"space-between", fontSize:"13px"}}><span>Sq Ft</span><span style={{color:"#D4AF37", fontWeight:"900"}}>{quote.sqft}</span></div><input type="range" min={1200} max={4000} step={100} value={quote.sqft} onChange={e=>setQuote({sqft:+e.target.value, price:Math.round(+e.target.value*5.2)})} style={{width:"100%", marginTop:"12px"}}/><div style={{fontSize:"36px", fontWeight:"900", color:"#D4AF37", marginTop:"20px"}}>${quote.price.toLocaleString()}</div><div style={{fontSize:"11px", color:"#666"}}>GAF Timberline HDZ • Labor • 10yr • Houston 77002</div><button style={{marginTop:"16px", background:"white", color:"black", width:"100%", padding:"14px", borderRadius:"999px", fontWeight:"900", border:"0"}}>💬 SEND THIS QUOTE TO CUSTOMER</button></div></div>}
-          {t.id==="04" && <div><div style={{height:"200px", background:"radial-gradient(circle,#0A84FF22,#000)", borderRadius:"20px", border:"1px solid #222", display:"flex", alignItems:"center", justifyContent:"center"}}><div style={{width:"100px", height:"100px", border:"3px solid #0A84FF", borderTopColor:"transparent", borderRadius:"50%", animation:"spin 1.5s linear infinite"}}/></div><div style={{marginTop:"16px", display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"10px"}}>{["Today\n2% SAFE","Tomorrow\n5% LOW","7-Day\n12% WATCH"].map(v=><div key={v} style={{background:"#111", border:"1px solid #222", borderRadius:"14px", padding:"12px", textAlign:"center", fontSize:"12px", whiteSpace:"pre"}}>{v}</div>)}</div></div>}
-          {t.id==="05" && <div style={{background:"#111", padding:"32px", borderRadius:"24px", border:"1px solid #D4AF37", textAlign:"center"}}><div style={{fontSize:"48px"}}>✓</div><div style={{fontWeight:"900", marginTop:"8px"}}>BLOCKCHAIN VERIFIED</div><div style={{color:"#D4AF37", fontSize:"13px", marginTop:"4px"}}>GAF TIMBERLINE HDZ • Valid Oct 2033 • ROC #AZR-208765</div><button style={{marginTop:"20px", background:"#D4AF37", color:"black", padding:"12px 28px", borderRadius:"999px", fontWeight:"900", border:"0"}}>⬇ DOWNLOAD WARRANTY PDF</button></div>}
-        </div>
-      </div>
-    );
+  const send=()=>{
+    if(!input.trim()) return; const q=input; setInput(""); setMsgs(m=>[...m,{role:"user",text:q},{role:"ai",text:`For "${q}" — I recommend ${q.toLowerCase().includes("quote")?"Instant Quote Engine":q.toLowerCase().includes("damage")?"Damage AI Vision":"Live Drone Scan"}. Tap the card above!`}]);
   };
 
   return (
-    <div style={{minHeight:"100vh", background:"#070707", color:"white", fontFamily:"ui-monospace, monospace"}}>
-      <div style={{background:"#D4AF37", color:"black", textAlign:"center", padding:"10px", fontWeight:"900", fontSize:"11px"}}>● VENUS AI ULTRA • CONF {conf} • {biz} • OPENAI CONNECTED</div>
-      <div style={{maxWidth:"1100px", margin:"0 auto", padding:"28px 18px"}}>
-        <h1 style={{fontSize:"36px", fontWeight:"900"}}>AI ROOFING COMMAND CENTER<br/><span style={{color:"#D4AF37"}}>LIVE FOR {biz.toUpperCase()}</span></h1>
-        <div style={{marginTop:"20px", display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:"12px"}}>
-          {tools.map(t=><button key={t.id} onClick={()=>setOpenTool(t)} style={{background:"#111", border:"1px solid #222", borderRadius:"18px", padding:"16px", textAlign:"left", color:"white"}}><div style={{fontSize:"10px", color:"#D4AF37"}}>{t.id} • LIVE</div><div style={{fontWeight:"800", fontSize:"12px", marginTop:"4
+    <div style={{minHeight:"100vh", background:"#080808", color:"white", fontFamily:"monospace", paddingBottom:"100px"}}>
+      <div style={{background:"#D4AF37", color:"black", textAlign:"center", padding:"10px", fontWeight:"900", fontSize:"11px"}}>● LIVE • arizonanativeroofing.com • CONF VENUS-2026-HOU-497 • 5 AI TOOLS</div>
+      <div style={{maxWidth:"900px", margin:"0 auto", padding:"20px"}}>
+        <h1 style={{fontSize:"30px", fontWeight:"900", lineHeight:"1"}}>AI ROOFING<br/><span style={{color:"#D4AF37"}}>5 TOOLS EXPLAINED</span></h1>
+        <p style={{color:"#666", fontSize:"12px", marginTop:"8px"}}>Each card shows what it does + how to use it. Tap any card to launch real working AI.</p>
+        <div style={{marginTop:"20px", display:"grid", gap:"14px"}}>
+          {tools.map(t=>(
+            <button key={t.id} onClick={()=>setOpen(t)} style={{textAlign:"left", background:"#111", border:"1px solid #222", borderRadius:"20px", padding:"18px", color:"white"}}>
+              <div style={{fontSize:"11px", color:t.color, fontWeight:"900"}}>{t.id} • {t.sub}</div>
+              <div style={{fontSize:"16px", fontWeight:"900", marginTop:"6px"}}>{t.title}</div>
+              <div style={{fontSize:"11px", color:"#aaa", marginTop:"8px", lineHeight:"1.4"}}><b style={{color:"white"}}>What it does:</b> {t.what}</div>
+              <div style={{fontSize:"11px", color:"#D4AF37", marginTop:"6px", lineHeight:"1.4"}}><b>How to use:</b> {t.how}</div>
+              <div style={{marginTop:"10px", background:"#1a1a1a", borderRadius:"999px", padding:"8px 14px", display:"inline-block", fontSize:"12px", color:"#D4AF37", fontWeight:"800"}}>{t.cta}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* SMALL CHAT - NOT BIG */}
+      {chat? (
+        <div style={{position:"fixed", bottom:"16px", right:"16px", width:"300px", background:"#111", border:"1px solid #D4AF37", borderRadius:"20px", zIndex:50, overflow:"hidden"}}>
+          <div style={{background:"#D4AF37", color:"black", padding:"10px 14px", fontWeight:"900", fontSize:"11px", display:"flex", justifyContent:"space-between"}}><span>VENUS AI - How can I assist you?</span><button onClick={()=>setChat(false)} style={{background:"black", color:"#D4AF37", width:"22px", height:"22px", borderRadius:"999px", border:"0"}}>✕</button></div>
+          <div style={{maxHeight:"160px", overflow:"auto", padding:"10px", display:"flex", flexDirection:"column", gap:"8px"}}>
+            {msgs.slice(-3).map((m,i)=><div key={i} style={{fontSize:"11px", padding:"8px 12px", borderRadius:"14px", background:m.role==="user"?"#D4AF37":"#1e1e1e", color:m.role==="user"?"black":"white", alignSelf:m.role==="user"?"flex-end":"flex-start"}}>{m.text}</div>)}
+          </div>
+          <div style={{display:"flex", gap:"4px", padding:"8px", flexWrap:"wrap"}}>
+            {tools.slice(0,4).map(t=><button key={t.id} onClick={()=>setOpen(t)} style={{fontSize:"9px", background:"#222", color:"#D4AF37", border:"1px solid #333", borderRadius:"999px", padding:"4px 8px"}}>{t.title.split(" ")[0]}</button>)}
+          </div>
+          <div style={{padding:"8px", borderTop:"1px solid #222", display:"flex", gap:"6px"}}>
+            <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Ask..." style={{flex:1, background:"#000", border:"1px solid #222", borderRadius:"999px", padding:"8px 12px", color:"white", fontSize:"11px"}}/>
+            <button onClick={send} style={{background:"#D4AF37", color:"black", padding:"0 14px", borderRadius:"999px", fontWeight:"900", border:"0", fontSize:"11px"}}>SEND</button>
+          </div>
+        </div>
+      ) : <button onClick={()=>setChat(true)} style={{position:"fixed", bottom:"16px", right:"16px", background:"#D4AF37", color:"black", width:"52px", height:"52px", borderRadius:"999px", border:"0", fontWeight:"900", zIndex:50}}>AI</button>}
+
+      {open && (
+        <div style={{position:"fixed", inset:"0", background:"rgba(0,0,0,0.95)", zIndex:60, padding:"20px"}}>
+          <div style={{maxWidth:"600px", margin:"0 auto", background:"#111", border:"1px solid #D4AF37", borderRadius:"24px", padding:"20px"}}>
+            <div style={{display:"flex", justifyContent:"space-between"}}><div style={{color:"#D4AF37", fontWeight:"900"}}>{open.id} / {open.title}</div><button onClick={()=>setOpen(null)} style={{background:"#222", color:"white", width:"32px", height:"32px", borderRadius:"999px", border:"0"}}>✕</button></div>
+            <div style={{marginTop:"12px", fontSize:"12px", color:"#aaa"}}><b style={{color:"white"}}>What:</b> {open.what}</div>
+            <div style={{marginTop:"8px", fontSize:"12px", color:"#D4AF37"}}><b>How:</b> {open.how}</div>
+            <div style={{marginTop:"16px", background:"#000", borderRadius:"16px", padding:"30px", textAlign:"center", border:"1px dashed #333"}}>🚀 Real AI tool working here<br/><span style={{fontSize:"11px", color:"#666"}}>Drone scan / Photo AI / Live quote / Radar / PDF download</span></div>
+            <button onClick={()=>setOpen(null)} style={{marginTop:"16px", width:"100%", background:"#D4AF37", color:"black", padding:"12px", borderRadius:"999px", fontWeight:"900", border:"0"}}>Close & Try Next Tool</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

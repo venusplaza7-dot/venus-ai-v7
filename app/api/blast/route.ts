@@ -2,7 +2,9 @@ import { kv } from '@vercel/kv'
 
 const RESEND_KEY = process.env.RESEND_API_KEY!
 const WHATSAPP = '17865880578'
-
+export async function GET(req: Request) {
+  return POST(req);
+}
 export async function POST(req: Request){
   const { niche='roofing', city='houston', limit=5 } = await req.json()
   const ids = await kv.smembers(`leads:${city}:${niche}`) as string[]

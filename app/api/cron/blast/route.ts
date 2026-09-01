@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-// VENUS AI - V36 FINAL - YOUR NEW KEY INSERTED - MONTH WORK SAFE
-const HARDCODED_SERP_KEY = "a74863d21ecf5390ee9b6a5b89220793f7a62f87187a5a8c509271128563adf48";
+// VENUS AI - V36 FINAL FIXED - NO TS ERROR - YOUR NEW KEY HARDCODED
+const HARDCODED_SERP_KEY: string = "a74863d21ecf5390ee9b6a5b89220793f7a62f87187a5a8c509271128563adf48";
 
 const ALL_STATES = ["Texas","Florida","California","New York","Pennsylvania","Illinois","Ohio","Georgia","North Carolina","Michigan","New Jersey","Virginia","Washington","Arizona","Massachusetts","Tennessee","Indiana","Missouri","Maryland","Wisconsin","Colorado","Minnesota","South Carolina","Alabama","Louisiana","Kentucky","Oregon","Oklahoma","Connecticut","Utah","Nevada","Iowa","Arkansas","Mississippi","Kansas","New Mexico","Nebraska","West Virginia","Idaho","Hawaii","New Hampshire","Maine","Rhode Island","Montana","Delaware","South Dakota","North Dakota","Alaska","Vermont","Wyoming"];
 
@@ -23,10 +23,9 @@ async function kvDel(k:string){ try{ const u1=process.env.KV_REST_API_URL,t1=pro
 
 export async function GET(req:Request){return POST(req);}
 export async function POST(req:Request){
-  const ENV_KEY = process.env.SERP_API_KEY;
-  const SERP_KEY = (HARDCODED_SERP_KEY && HARDCODED_SERP_KEY!== "PASTE_NEW_KEY_HERE")? HARDCODED_SERP_KEY : ENV_KEY;
+  const SERP_KEY = HARDCODED_SERP_KEY || process.env.SERP_API_KEY;
   const BREVO_KEY = process.env.BREVO_API_KEY;
-  const keyDebug = SERP_KEY? SERP_KEY.substring(0,8)+"..."+SERP_KEY.substring(SERP_KEY.length-4) : "MISSING";
+  const keyDebug = SERP_KEY? (SERP_KEY as string).substring(0,8)+"..."+(SERP_KEY as string).substring((SERP_KEY as string).length-4) : "MISSING";
 
   try{
     let raw:any = await kvGet('current_state_index'); if(raw==null||raw==="") raw=0; let idx=Number(raw); if(isNaN(idx)) idx=0;
@@ -60,6 +59,6 @@ export async function POST(req:Request){
 
     let tot=0; for(const c of toSend as any[]){ try{ await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':BREVO_KEY as string,'Content-Type':'application/json'},body:JSON.stringify({sender:{name:'Venus AI',email:'contact@venusplaza.com'},to:[{email:c.email}],subject:`Your ${c.domain} outdated in ${curS} - $497 rebuild`,htmlContent:`Hi, saw ${c.domain} looks old (${c.reason}). We rebuild AI booking+SEO $497. Reply APPROVE. Demo: https://${c.domain}`})}); tot++; }catch(e){console.log(e);} }
     await kvDel('blast_lock');
-    return new Response(JSON.stringify({ok:true,cur:curS,curI:idx,nxt:nxtS,nxtI:nxtI,tot,allMined:all.length,keyDebug,dbg,msg:`V36 FINAL Mined ${all.length} -> Sent ${tot} from ${curS} key:${keyDebug} err:${dbg.serpError||'none'}`}),{headers:{'Content-Type':'application/json'}});
+    return new Response(JSON.stringify({ok:true,cur:curS,curI:idx,nxt:nxtS,nxtI:nxtI,tot,allMined:all.length,keyDebug,dbg,msg:`V36 FIXED TS ERROR Mined ${all.length} -> Sent ${tot} from ${curS} key:${keyDebug} err:${dbg.serpError||'none'}`}),{headers:{'Content-Type':'application/json'}});
   }catch(e:any){ await kvDel('blast_lock'); return new Response(JSON.stringify({ok:false,error:e.message,keyDebug}),{status:500,headers:{'Content-Type':'application/json'}}); }
 }

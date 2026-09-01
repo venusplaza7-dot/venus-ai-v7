@@ -1,10 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-// VENUS AI - V36 FINAL - COPY PASTE - YOUR MONTH WORK SAFE
-// HOW TO USE: Replace af4863d21aef539aae500a5fe89220793fed62f818745a0c90323320363adf48 with your new SerpAPI key from new email
-
-// ===== STEP 1: PASTE YOUR NEW KEY HERE =====
-const HARDCODED_SERP_KEY = "af4863d21aef539aae500a5fe89220793fed62f818745a0c90323320363adf48"; // <-- PUT NEW KEY HERE LIKE "a1b2c3d4e5f6..."
+// VENUS AI - V36 FINAL - YOUR NEW KEY INSERTED - MONTH WORK SAFE
+const HARDCODED_SERP_KEY = "a74863d21ecf5390ee9b6a5b89220793f7a62f87187a5a8c509271128563adf48";
 
 const ALL_STATES = ["Texas","Florida","California","New York","Pennsylvania","Illinois","Ohio","Georgia","North Carolina","Michigan","New Jersey","Virginia","Washington","Arizona","Massachusetts","Tennessee","Indiana","Missouri","Maryland","Wisconsin","Colorado","Minnesota","South Carolina","Alabama","Louisiana","Kentucky","Oregon","Oklahoma","Connecticut","Utah","Nevada","Iowa","Arkansas","Mississippi","Kansas","New Mexico","Nebraska","West Virginia","Idaho","Hawaii","New Hampshire","Maine","Rhode Island","Montana","Delaware","South Dakota","North Dakota","Alaska","Vermont","Wyoming"];
 
@@ -63,6 +60,6 @@ export async function POST(req:Request){
 
     let tot=0; for(const c of toSend as any[]){ try{ await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':BREVO_KEY as string,'Content-Type':'application/json'},body:JSON.stringify({sender:{name:'Venus AI',email:'contact@venusplaza.com'},to:[{email:c.email}],subject:`Your ${c.domain} outdated in ${curS} - $497 rebuild`,htmlContent:`Hi, saw ${c.domain} looks old (${c.reason}). We rebuild AI booking+SEO $497. Reply APPROVE. Demo: https://${c.domain}`})}); tot++; }catch(e){console.log(e);} }
     await kvDel('blast_lock');
-    return new Response(JSON.stringify({ok:true,cur:curS,curI:idx,nxt:nxtS,nxtI:nxtI,tot,allMined:all.length,keyDebug,dbg,msg:`V36 COPY PASTE Mined ${all.length} -> Sent ${tot} from ${curS} key:${keyDebug} err:${dbg.serpError||'none'}`}),{headers:{'Content-Type':'application/json'}});
+    return new Response(JSON.stringify({ok:true,cur:curS,curI:idx,nxt:nxtS,nxtI:nxtI,tot,allMined:all.length,keyDebug,dbg,msg:`V36 FINAL Mined ${all.length} -> Sent ${tot} from ${curS} key:${keyDebug} err:${dbg.serpError||'none'}`}),{headers:{'Content-Type':'application/json'}});
   }catch(e:any){ await kvDel('blast_lock'); return new Response(JSON.stringify({ok:false,error:e.message,keyDebug}),{status:500,headers:{'Content-Type':'application/json'}}); }
 }

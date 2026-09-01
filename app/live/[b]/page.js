@@ -1,58 +1,103 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
-const GOLD="#c19a4a";
 export default function Page(){
-  const {b}=useParams();
-  const bizRaw=b; const biz=Array.isArray(bizRaw)?bizRaw[bizRaw.length-1]:bizRaw||"arizonanativeroofing.com";
-  const [sqft,setSqft]=useState(2400); const [chatOpen,setChatOpen]=useState(false);
-  const [messages,setMessages]=useState([{role:'sarah',text:"Hey hey! 👋 Thanks for stopping by Arizona Native Roofing. I'm Sarah — real person here! How's your roof? Any leaks?"}]);
-  const [input,setInput]=useState(""); const [typing,setTyping]=useState(false); const [whatsApp,setWhatsApp]=useState(""); const [ticket,setTicket]=useState(null); const [demoState,setDemoState]=useState({});
-  const chatRef=useRef(null); const price=Math.round(sqft*5.2);
-  const handleSend=()=>{if(!input.trim())return; const u=input; setMessages(m=>[...m,{role:'user',text:u}]); setInput(""); setTyping(true); setTimeout(()=>{setTyping(false); setMessages(m=>[...m,{role:'sarah',text:"Totally get it — we can check it without climbing. Just drop your address and I'll pull satellite measure in 10 sec. Want ticket?"}]);},1100);};
-  const genTicket=()=>setTicket(`VENUS-${Math.floor(1000+Math.random()*9000)}`);
-  useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight;},[messages][typing]);
+  const params = useParams();
+  const b = params?.b;
+  const biz = Array.isArray(b) ? b[b.length-1] : b || "arizonanativeroofing.com";
+  const [sqft,setSqft]=useState(2400);
+  const [chatOpen,setChatOpen]=useState(false);
+  const [messages,setMessages]=useState([{role:'sarah',text:"Hey hey! 👋 I'm Sarah from "+biz+" — real person. How's your roof?"}]);
+  const [input,setInput]=useState("");
+  const [typing,setTyping]=useState(false);
+  const [whatsApp,setWhatsApp]=useState("");
+  const [ticket,setTicket]=useState(null);
+  const [d1,setD1]=useState(false); const [d2,setD2]=useState(false);
+  const chatRef=useRef(null);
+  const price=Math.round(sqft*5.2);
+  const send=()=>{
+    if(!input.trim()) return;
+    const t=input; setMessages(m=>[...m,{role:'user',text:t}]); setInput(""); setTyping(true);
+    setTimeout(()=>{setTyping(false); setMessages(m=>[...m,{role:'sarah',text:"Got it — sounds like Section B wear. Want me to run scan? Drop WhatsApp for ticket VENUS-XXXX, owner notified instantly!"}]);},900);
+  };
+  useEffect(()=>{ if(chatRef.current) chatRef.current.scrollTop=chatRef.current.scrollHeight; },[messages, typing]);
   return(
-    <div className="min-h-screen bg-[#faf8f3] text-[#111] font-[Inter,system-ui]">
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');.serif{font-family:"Instrument Serif",serif} @keyframes radar{0%{transform:scale(0.2);opacity:.8}100%{transform:scale(1.8);opacity:0}} @media(max-width:600px){.gridTools{grid-template-columns:1fr!important}}`}</style>
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-[#faf8f3]/80 border-b border-[#e8e0c8]/70"><div className="max-w-[1140px] mx-auto px-6 h-[42px] flex items-center justify-between text-[11px] tracking-widest uppercase"><div className="flex items-center gap-2"><span className="font-bold">VENUS AI</span><span className="w-1 h-1 rounded-full bg-black/30"/> <span className="text-black/60">{biz}</span></div><div className="text-black/40 hidden md:block">ROC #AZR-208765 • VERIFIED</div></div></header>
-      <section className="max-w-[1140px] mx-auto px-6 pt-14 md:pt-24 pb-10">
-        <div className="grid md:grid-cols-[1.15fr_0.85fr] gap-10 items-start">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#e8e0c8] text-[11px] shadow-sm mb-6"><span className="w-2 h-2 rounded-full bg-[#c19a4a]"/>Live in Maricopa County • No app</div>
-            <h1 className="serif text-[42px] md:text-[76px] leading-[0.95] tracking-tight">Your roof.<br/>Understood in <span className="italic">10 seconds<span style={{color:GOLD}}>.</span></span></h1>
-            <p className="mt-6 text-[18px] text-black/60 max-w-[520px] leading-[1.5]">5 AI tools that actually close jobs. No app. No monthly fee. See demo below.</p>
-            <div className="mt-8 flex gap-3"><button onClick={()=>document.getElementById('tools')?.scrollIntoView({behavior:'smooth'})} className="h-[48px] px-7 rounded-full bg-black text-white text-[14px]">Explore tools →</button><div className="h-[48px] px-4 rounded-full bg-white border border-[#e8e0c8] flex items-center gap-2 text-[13px] text-black/70"><span className="w-6 h-6 rounded-full bg-[#faf8f3] border border-[#e8e0c8] grid place-items-center">✓</span>Used by 47 roofers • 4.9/5</div></div>
+    <div style={{minHeight:"100vh", background:"#faf8f3", color:"#111", fontFamily:"system-ui"}}>
+      <style>{`@media(max-width:600px){.gridTools{grid-template-columns:1fr!important}.hero{font-size:28px!important}}`}</style>
+      <div style={{maxWidth:"1140px", margin:"0 auto", padding:"20px"}}>
+        <div style={{fontSize:"11px", letterSpacing:"2px", color:"#c19a4a", fontWeight:900}}>VENUS AI • {biz.toUpperCase()} • ROC VERIFIED</div>
+        <h1 className="hero" style={{fontSize:"48px", fontWeight:900, lineHeight:0.95, marginTop:"18px"}}>Your roof.<br/><span style={{color:"#c19a4a", fontStyle:"italic"}}>Understood in 10 sec.</span></h1>
+        <p style={{color:"#666", marginTop:"12px"}}>Mobile-friendly premium — 5 tools that close jobs.</p>
+        
+        <div className="gridTools" style={{marginTop:"24px", display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"16px"}}>
+          <div style={{background:"white", border:"1px solid #e8e0c8", borderRadius:"24px", padding:"18px"}}>
+            <div style={{fontSize:"10px", color:"#c19a4a", fontWeight:900}}>01 • DRONE SCAN</div>
+            <div style={{marginTop:"10px", height:"110px", background:"#f5f1e8", borderRadius:"12px", display:"grid", placeItems:"center", fontSize:"11px"}}>🛰️ 2,400 sq ft satellite<br/>Section B 98% wear</div>
+            <h3 style={{marginTop:"12px", fontWeight:700}}>Live Drone Scan</h3>
+            <button onClick={()=>setD1(!d1)} style={{marginTop:"10px", background:"black", color:"white", borderRadius:"999px", padding:"8px 16px", border:"0"}}>Try Demo →</button>
+            {d1&&<div style={{marginTop:"8px", fontSize:"12px", background:"#faf8f3", padding:"8px", borderRadius:"8px"}}>Scanned • PDF ready</div>}
           </div>
-          <div className="rounded-[28px] bg-white border border-[#e8e0c8] shadow-[0_20px_60px_-30px_rgba(0,0,0,0.2)] p-[10px]"><div className="rounded-[20px] bg-[#111] aspect-[16/10] relative grid place-items-center overflow-hidden"><div className="text-white/90 text-center"><div className="w-14 h-14 mx-auto rounded-full bg-white/10 grid place-items-center">▶</div><div className="mt-4 text-[12px] tracking-widest uppercase text-white/60">20s Demo</div><div className="text-[14px] mt-1">Drone → Damage → Quote</div></div></div></div>
-        </div>
 
-        <div id="tools" className="gridTools mt-14 grid md:grid-cols-3 gap-5">
-          {/* 01 */}
-          <div className="bg-white border border-[#e8e0c8] rounded-[24px] p-5 shadow-sm"><div className="text-[10px] tracking-widest text-[#c19a4a] font-bold">01 • DRONE SCAN</div><div className="mt-3 h-[120px] rounded-[12px] bg-[#f5f1e8] grid place-items-center text-[11px] text-black/50">🛰️ Satellite roof 2,400 sq ft<br/>Section B 98% wear outline</div><h3 className="serif text-[20px] mt-4">Live Drone Scan</h3><p className="text-[13px] text-black/60 mt-2">Measures exact from satellite. No ladder.</p><button onClick={()=>setDemoState(s=>({...s,d1:!s.d1}))} className="mt-4 h-[44px] px-6 rounded-full bg-black text-white text-[13px]">Try Live Demo →</button>{demoState.d1&&<div className="mt-3 text-[12px] bg-[#faf8f3] p-3 rounded-[12px]">2,400 sq ft scanned • PDF ready • Section B needs attention</div>}</div>
-          {/* 02 */}
-          <div className="bg-white border border-[#e8e0c8] rounded-[24px] p-5 shadow-sm"><div className="text-[10px] tracking-widest text-[#c19a4a] font-bold">02 • DAMAGE AI</div><div className="mt-3 h-[120px] rounded-[12px] bg-[#111] grid place-items-center text-[11px] text-white/70">🔴 Red boxes 92%<br/>$1,240 estimate</div><h3 className="serif text-[20px] mt-4">Damage AI Vision</h3><p className="text-[13px] text-black/60 mt-2">Upload photo → AI marks damage.</p><button onClick={()=>setDemoState(s=>({...s,d2:!s.d2}))} className="mt-4 h-[44px] px-6 rounded-full bg-black text-white text-[13px]">Try Live Demo →</button>{demoState.d2&&<div className="mt-3 text-[12px] bg-[#faf8f3] p-3 rounded-[12px]">92% confidence • 3 boxes detected • $1,240 est</div>}</div>
-          {/* 03 */}
-          <div className="bg-white border border-[#e8e0c8] rounded-[24px] p-5 shadow-sm"><div className="text-[10px] tracking-widest text-[#c19a4a] font-bold">03 • INSTANT QUOTE</div><div className="mt-3 h-[120px] rounded-[12px] bg-[#faf8f3] p-3 border border-[#e8e0c8]"><div className="text-[22px] font-bold">${price.toLocaleString()}</div><div className="text-[11px] text-black/50">GAF HDZ • {sqft} sq ft</div><input type="range" min={1200} max={4000} value={sqft} onChange={e=>setSqft(Number(e.target.value))} className="w-full mt-2"/></div><h3 className="serif text-[20px] mt-4">Instant Quote</h3><p className="text-[13px] text-black/60 mt-2">Slider 1200-4000 → live price.</p></div>
-          {/* 04 */}
-          <div className="bg-white border border-[#e8e0c8] rounded-[24px] p-5 shadow-sm"><div className="text-[10px] tracking-widest text-[#c19a4a] font-bold">04 • WEATHER SHIELD</div><div className="mt-3 h-[120px] rounded-[12px] bg-[#0f1115] relative grid place-items-center overflow-hidden"><div className="w-20 h-20 rounded-full border border-white/10"/><div className="absolute w-20 h-20 rounded-full border border-[#c19a4a] animate-[radar_2s_infinite]"/><div className="absolute text-[11px] text-white">12% WATCH</div></div><h3 className="serif text-[20px] mt-4">Weather Shield</h3><p className="text-[13px] text-black/60 mt-2">Today 2% SAFE, 7-Day 12% WATCH hail.</p></div>
-          {/* 05 */}
-          <div className="bg-[#111] border border-[#e8e0c8] rounded-[24px] p-5 shadow-sm text-white"><div className="text-[10px] tracking-widest text-[#c19a4a] font-bold">05 • WARRANTY VAULT</div><div className="mt-3 h-[120px] rounded-[12px] bg-white/5 border border-white/10 grid place-items-center"><div className="w-14 h-14 rounded-full bg-[#c19a4a] grid place-items-center text-black font-bold">✓</div></div><h3 className="serif text-[20px] mt-4">Warranty Vault</h3><p className="text-[13px] text-white/60 mt-2">GAF Gold till Oct 2033 • ROC AZR-208765 transferable</p></div>
-          <div className="bg-[#111] rounded-[24px] p-7 text-white flex flex-col justify-between"><div><div className="text-[11px] tracking-widest uppercase text-white/40">GET TICKET • NO APP</div><h4 className="serif text-[26px] mt-3 leading-[1.1]">Crew calls in 30 mins. WhatsApp instantly.</h4></div><div className="mt-6 bg-white rounded-[16px] p-4 text-black">{!ticket? (<><div className="flex gap-2"><div className="h-[44px] px-3 rounded-full bg-[#faf8f3] border border-[#e8e0c8] flex items-center text-[13px]">🇺🇸 +1</div><input value={whatsApp} onChange={e=>setWhatsApp(e.target.value)} placeholder="WhatsApp" className="flex-1 h-[44px] px-4 rounded-full bg-[#faf8f3] border border-[#e8e0c8] text-[14px] outline-none"/></div><button onClick={genTicket} className="mt-3 w-full h-[46px] rounded-full bg-black text-white text-[13px]">Get Ticket + WhatsApp →</button></>):(<div className="text-center py-2"><div className="w-10 h-10 mx-auto rounded-full bg-emerald-500 text-white grid place-items-center">✓</div><div className="mt-3 font-semibold">{ticket}</div><div className="text-[12px] text-black/60">WhatsApp sent • Crew ETA 30m</div><button onClick={()=>setTicket(null)} className="mt-3 text-[12px] underline">Another</button></div>)}</div></div>
-        </div>
-      </section>
-
-      <footer className="border-t border-[#e8e0c8]/70 py-8"><div className="max-w-[1140px] mx-auto px-6 flex justify-between text-[12px] text-black/50"><span>Used by 47 roofers • 1,243 scans • 4.9/5 ★★★★★</span><span className="hidden md:block">VENUS AI • {biz}</span></div></footer>
-
-      <div className="fixed bottom-5 right-5 z-40">
-        {!chatOpen? (<button onClick={()=>setChatOpen(true)} className="w-[56px] h-[56px] rounded-full bg-[#111] border-2 border-[#c19a4a] grid place-items-center"><div className="w-7 h-7 rounded-full bg-white/10 grid place-items-center text-white text-[12px]">S</div></button>):(
-          <div className="w-[92vw] md:w-[340px] rounded-[20px] bg-white border border-[#e8e0c8] shadow-[0_24px_80px_-20px_rgba(0,0,0,0.35)] flex flex-col max-h-[72vh] fixed bottom-5 right-[4vw] md:right-0 md:bottom-0 md:relative">
-            <div className="h-[56px] bg-black text-white flex items-center justify-between px-4 rounded-t-[20px]"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-white text-black grid place-items-center text-[12px] font-bold">S</div><div><div className="text-[13px] font-medium flex gap-2">Sarah <span className="text-[10px] px-1.5 py-[2px] rounded-full bg-white/15">Real person</span></div><div className="text-[11px] text-white/60">Online • Avg 12s</div></div></div><button onClick={()=>setChatOpen(false)} className="w-7 h-7 rounded-full bg-white/10 grid place-items-center">X</button></div>
-            <div ref={chatRef} className="flex-1 overflow-auto p-4 space-y-3 bg-[#faf8f3]">{messages.map((m,i)=>(<div key={i} className={`flex ${m.role==='user'?'justify-end':'justify-start'}`}><div className={`${m.role==='user'?'bg-black text-white rounded-[18px] rounded-br-[6px]':'bg-white border border-[#e8e0c8] rounded-[18px] rounded-bl-[6px]'} px-4 py-3 text-[13px] max-w-[78%]`}>{m.text}</div></div>))}{typing&&<div className="text-[11px] text-black/40">Sarah is typing...</div>}</div>
-            <div className="p-3 border-t border-[#e8e0c8] bg-white flex gap-2 rounded-b-[20px]"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleSend()} placeholder="Ask Sarah..." className="flex-1 h-[40px] rounded-full bg-[#faf8f3] border border-[#e8e0c8] px-4 text-[13px] outline-none"/><button onClick={handleSend} className="w-[40px] h-[40px] rounded-full bg-black text-white grid place-items-center">↑</button></div>
+          <div style={{background:"white", border:"1px solid #e8e0c8", borderRadius:"24px", padding:"18px"}}>
+            <div style={{fontSize:"10px", color:"#c19a4a", fontWeight:900}}>02 • DAMAGE AI</div>
+            <div style={{marginTop:"10px", height:"110px", background:"#111", borderRadius:"12px", display:"grid", placeItems:"center", color:"white", fontSize:"11px"}}>🔴 Red boxes 92%<br/>$1,240 est</div>
+            <h3 style={{marginTop:"12px", fontWeight:700}}>Damage AI Vision</h3>
+            <button onClick={()=>setD2(!d2)} style={{marginTop:"10px", background:"black", color:"white", borderRadius:"999px", padding:"8px 16px", border:"0"}}>Try Demo →</button>
+            {d2&&<div style={{marginTop:"8px", fontSize:"12px", background:"#faf8f3", padding:"8px", borderRadius:"8px"}}>92% • 3 damages • $1,240</div>}
           </div>
-        )}
+
+          <div style={{background:"white", border:"1px solid #e8e0c8", borderRadius:"24px", padding:"18px"}}>
+            <div style={{fontSize:"10px", color:"#c19a4a", fontWeight:900}}>03 • QUOTE</div>
+            <div style={{marginTop:"10px", background:"#faf8f3", borderRadius:"12px", padding:"12px", border:"1px solid #e8e0c8"}}>
+              <div style={{fontSize:"22px", fontWeight:900}}>${price.toLocaleString()}</div>
+              <div style={{fontSize:"11px", color:"#666"}}>{sqft} sq ft • GAF HDZ</div>
+              <input type="range" min={1200} max={4000} value={sqft} onChange={e=>setSqft(Number(e.target.value))} style={{width:"100%", marginTop:"6px"}}/>
+            </div>
+            <h3 style={{marginTop:"12px", fontWeight:700}}>Instant Quote</h3>
+          </div>
+
+          <div style={{background:"white", border:"1px solid #e8e0c8", borderRadius:"24px", padding:"18px"}}>
+            <div style={{fontSize:"10px", color:"#c19a4a", fontWeight:900}}>04 • WEATHER</div>
+            <div style={{marginTop:"10px", height:"110px", background:"#0f1115", borderRadius:"12px", display:"grid", placeItems:"center", color:"white"}}>12% WATCH • Hail</div>
+            <h3 style={{marginTop:"12px", fontWeight:700}}>Weather Shield</h3>
+          </div>
+
+          <div style={{background:"#111", borderRadius:"24px", padding:"18px", color:"white"}}>
+            <div style={{fontSize:"10px", color:"#c19a4a", fontWeight:900}}>05 • WARRANTY</div>
+            <div style={{marginTop:"10px", height:"110px", background:"rgba(255,255,255,0.06)", borderRadius:"12px", display:"grid", placeItems:"center"}}>✓ Gold Seal • Till 2033</div>
+            <h3 style={{marginTop:"12px", fontWeight:700}}>Warranty Vault</h3>
+          </div>
+
+          <div style={{background:"#111", borderRadius:"24px", padding:"18px", color:"white", display:"flex", flexDirection:"column", justifyContent:"space-between"}}>
+            <div><div style={{fontSize:"10px", letterSpacing:"1px", color:"rgba(255,255,255,0.4)"}}>GET TICKET</div><h3 style={{fontSize:"22px", marginTop:"8px"}}>Crew calls in 30 mins.</h3></div>
+            <div style={{background:"white", borderRadius:"16px", padding:"12px", marginTop:"14px"}}>
+              {!ticket ? (
+                <>
+                <div style={{display:"flex", gap:"6px"}}><div style={{background:"#faf8f3", border:"1px solid #e8e0c8", borderRadius:"999px", padding:"8px 12px", fontSize:"12px"}}>🇺🇸 +1</div><input value={whatsApp} onChange={e=>setWhatsApp(e.target.value)} placeholder="WhatsApp" style={{flex:1, borderRadius:"999px", border:"1px solid #e8e0c8", padding:"8px 12px"}}/></div>
+                <button onClick={()=>setTicket("VENUS-"+Math.floor(1000+Math.random()*9000))} style={{marginTop:"10px", width:"100%", background:"black", color:"white", borderRadius:"999px", padding:"10px", border:"0"}}>Get Ticket + WhatsApp →</button>
+                </>
+              ):(
+                <div style={{textAlign:"center", color:"black"}}><div style={{width:"32px", height:"32px", background:"#22c55e", borderRadius:"999px", display:"grid", placeItems:"center", margin:"0 auto", color:"white"}}>✓</div><div style={{marginTop:"8px", fontWeight:700}}>{ticket}</div><div style={{fontSize:"11px", color:"#666"}}>WhatsApp sent • ETA 30m</div></div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
+
+      <button onClick={()=>setChatOpen(!chatOpen)} style={{position:"fixed", bottom:"20px", right:"20px", width:"56px", height:"56px", borderRadius:"999px", background:"#111", color:"#c19a4a", border:"2px solid #c19a4a", zIndex:50}}>{chatOpen?"X":"S"}</button>
+      {chatOpen&&(
+        <div style={{position:"fixed", bottom:"88px", right:"20px", width:"92vw", maxWidth:"340px", background:"white", border:"1px solid #e8e0c8", borderRadius:"20px", display:"flex", flexDirection:"column", height:"min(420px,60vh)", zIndex:50, boxShadow:"0 20px 40px rgba(0,0,0,0.2)"}}>
+          <div style={{background:"black", color:"white", padding:"12px 14px", borderRadius:"20px 20px 0 0", display:"flex", justifyContent:"space-between"}}><span style={{fontSize:"12px"}}>Sarah • Real • Online</span><button onClick={()=>setChatOpen(false)} style={{background:"rgba(255,255,255,0.15)", border:"0", color:"white", width:"24px", height:"24px", borderRadius:"999px"}}>X</button></div>
+          <div ref={chatRef} style={{flex:1, overflow:"auto", padding:"12px", display:"flex", flexDirection:"column", gap:"8px", background:"#faf8f3"}}>
+            {messages.map((m,i)=>(<div key={i} style={{alignSelf:m.role==="user"?"flex-end":"flex-start", background:m.role==="user"?"black":"white", color:m.role==="user"?"white":"black", border:m.role==="sarah"?"1px solid #e8e0c8":"0", padding:"10px 14px", borderRadius:"16px", fontSize:"13px", maxWidth:"80%"}}>{m.text}</div>))}
+            {typing&&<div style={{fontSize:"11px", color:"#999"}}>Sarah is typing…</div>}
+          </div>
+          <div style={{padding:"10px", borderTop:"1px solid #e8e0c8", display:"flex", gap:"8px"}}>
+            <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Hi Sarah..." style={{flex:1, background:"#faf8f3", border:"1px solid #e8e0c8", borderRadius:"999px", padding:"10px 14px"}}/>
+            <button onClick={send} style={{background:"black", color:"white", border:"0", borderRadius:"999px", padding:"0 16px"}}>↑</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

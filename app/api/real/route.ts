@@ -5,7 +5,6 @@ let MEM: any[] = [];
 let MEM_STATE_IDX = 0;
 const BLACKLIST = ['reddit','yelp','youtube','facebook','wikipedia','yellowpages','angi','bbb','indeed','linkedin','instagram','tiktok','amazon'];
 
-// ROTATING STATES - New client every time
 const STATES = [
   { city: 'Houston', state: 'TX' },
   { city: 'Dallas', state: 'TX' },
@@ -109,12 +108,11 @@ export async function GET(req: NextRequest){
     const leads = await getLeads();
     const idx = await getStateIdx();
     const cur = STATES[idx % STATES.length];
-    return NextResponse.json({status:'VENUS_V9_ROTATION_CC', scraping:'OLD 2005-2020 5 CATS ROTATING STATES', total: leads.length, current_state: cur, next_state: STATES[(idx+1)%STATES.length], leads: leads.slice(0,5)});
+    return NextResponse.json({status:'VENUS_V10_FINAL_CC_ROTATE', scraping:'OLD 2005-2020 5 CATS ROTATING STATES + CC', total: leads.length, current_state: cur, next_state: STATES[(idx+1)%STATES.length], leads: leads.slice(0,5), cc: 'venusailux@gmail.com'});
   }
 
   if(action==='mine5' || action==='mine'){
     const serpKey = process.env.SERP_API_KEY || process.env.SERPAPI_API_KEY || '';
-    // ROTATE STATE
     let idx = await getStateIdx();
     const loc = STATES[idx % STATES.length];
     await setStateIdx((idx+1) % STATES.length);
@@ -153,7 +151,6 @@ export async function GET(req: NextRequest){
         }
       }
       if(mined.length===0){
-        // Fallback 5 cats different state
         mined = [
           {business:`${loc.city} Elite Roofing`, domain:`eliteroofing${loc.city.toLowerCase()}.com`, city:loc.city, state:loc.state, category:'roofers', email:`info@eliteroofing${loc.city.toLowerCase()}.com`, year:2008},
           {business:`${loc.city} Old Plumbing`, domain:`oldtownplumbing${loc.city.toLowerCase()}.com`, city:loc.city, state:loc.state, category:'plumbers', email:`info@oldtownplumbing${loc.city.toLowerCase()}.com`, year:2006},
@@ -163,7 +160,7 @@ export async function GET(req: NextRequest){
         ];
       }
       await setLeads(mined);
-      return NextResponse.json({autonomous:true, location: loc, mined:mined.length, leads:mined, rotation: `State ${idx} -> ${loc.city}, ${loc.state} - 5 cats`});
+      return NextResponse.json({autonomous:true, location: loc, mined:mined.length, leads:mined, rotation: `State ${idx} -> ${loc.city}, ${loc.state} - 5 cats`, cc: 'venusailux@gmail.com'});
     }catch(e:any){
       return NextResponse.json({error:e.message, mined:0});
     }
@@ -188,7 +185,7 @@ export async function GET(req: NextRequest){
       const html = luxuryEmail(lead, previewUrl, baseUrl);
       const to = targetEmail || lead.email;
       try{
-        // BREVO WITH CC to venusailux@gmail.com
+        // MAIN to customer with CC to venusailux
         const r = await fetch('https://api.brevo.com/v3/smtp/email',{
           method:'POST',
           headers:{'api-key': brevoKey,'Content-Type':'application/json'},
@@ -196,7 +193,6 @@ export async function GET(req: NextRequest){
             sender: { email: 'contact@venushq7.com', name: 'Venus HQ7' },
             to: [{ email: to }],
             cc: [{ email: 'venusailux@gmail.com' }],
-            bcc: [{ email: 've9us1@gmail.com' }],
             subject: `${lead.business} — Your ${lead.domain} from ${lead.year} is losing customers (${lead.city}, ${lead.state})`,
             htmlContent: html,
             replyTo: { email: 'ron@venushq7.com' }
@@ -204,10 +200,24 @@ export async function GET(req: NextRequest){
         });
         const j = await r.json();
         if(r.ok) sent++; else errors.push(j);
+
+        // GUARANTEED COPY to venusailux (so you always get it even if CC blocked)
+        await fetch('https://api.brevo.com/v3/smtp/email',{
+          method:'POST',
+          headers:{'api-key': brevoKey,'Content-Type':'application/json'},
+          body: JSON.stringify({
+            sender: { email: 'contact@venushq7.com', name: 'Venus HQ7' },
+            to: [{ email: 'venusailux@gmail.com' }],
+            subject: `[COPY] ${lead.business} — ${lead.domain} (${lead.city}, ${lead.state})`,
+            htmlContent: html + `<br/><br/><hr/><p style="color:#888;font-size:11px">Original TO: ${to} | Sent from V8 V10</p>`,
+            replyTo: { email: 'ron@venushq7.com' }
+          })
+        });
+
       }catch(err:any){ errors.push(err.message); }
       if(targetEmail) break;
     }
-    return NextResponse.json({mode: live==='1'? `LIVE 5 CATS ROTATING - BREVO + CC venusailux@gmail.com` : 'TEST to ve9us1@gmail.com + CC venusailux@gmail.com', sent, queue:list.length, cc: 'venusailux@gmail.com', location: list[0]?.city + ', ' + list[0]?.state, whatsapp:'+1 (786) 588-0578', errors});
+    return NextResponse.json({mode: live==='1'? `LIVE 5 CATS ROTATING - BREVO + CC venusailux@gmail.com + COPY` : 'TEST to ve9us1@gmail.com + CC + COPY venusailux@gmail.com', sent, queue:list.length, cc: 'venusailux@gmail.com - GUARANTEED COPY', location: list[0]?.city + ', ' + list[0]?.state, whatsapp:'+1 (786) 588-0578', errors});
   }
 
   return NextResponse.json({error:'unknown action'});

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
-// KV MEMORY (works without Vercel KV, auto fix Queue empty)
 let MEM: any[] = [];
 const BLACKLIST = ['reddit','yelp','youtube','facebook','wikipedia','yellowpages','angi','bbb','indeed','linkedin','instagram','tiktok','amazon'];
 
@@ -17,18 +16,15 @@ function luxuryEmail(lead:any, previewUrl:string, baseUrl:string){
   return `
   <div style="margin:0;padding:0;background:#050505;font-family:Arial,Helvetica,sans-serif">
     <div style="max-width:680px;margin:0 auto;background:#000;border:2px solid #c5a059;border-radius:18px;overflow:hidden">
-
       <div style="background:linear-gradient(90deg,#000,#1a1a1a);padding:18px 24px;border-bottom:1px solid #c5a059;display:flex;justify-content:space-between;align-items:center">
         <div style="color:#c5a059;font-weight:900;letter-spacing:6px;font-size:14px">VENUS HQ7</div>
         <div style="color:#fff;font-size:11px">+1 (786) 588-0578 | ron@venushq7.com</div>
       </div>
-
       <div style="padding:28px 24px 10px 24px">
         <h2 style="color:#fff;font-size:22px;line-height:28px;margin:0 0 10px 0">Hi ${lead.business} — Your ${lead.domain} Is From ${year} — 20 Years Old, Losing Business</h2>
         <p style="color:#ff5f56;font-size:14px;line-height:20px">We scanned ${lead.domain} — copyright © ${year}, no mobile, no calculator, no AI. Customer in ${lead.city} opens old site → thinks you closed → books competitor with AI. Since 2005-2020 you didn't upgrade.</p>
         <p style="color:#c5a059;font-size:13px">We upgrade ${lead.domain} from 2005 brochure to 2026 AI machine that makes profit.</p>
       </div>
-
       <div style="padding:0 24px">
         <div style="border:1px solid #222;border-radius:12px;padding:16px;background:#0a0a0a">
           <div style="color:#c5a059;font-weight:700;font-size:12px;letter-spacing:3px;margin-bottom:8px">WHO WE ARE</div>
@@ -45,7 +41,6 @@ function luxuryEmail(lead:any, previewUrl:string, baseUrl:string){
           <div style="color:#fff;font-size:13px;line-height:19px">Old site loses 70% leads. New AI site: 4x bookings, 24/7 WhatsApp auto-reply, price calculator locks customer, Google ranks you #1. $497 one-time, not monthly. You make extra $15k-$30k/mo.</div>
         </div>
       </div>
-
       <div style="padding:18px 24px">
         <div style="color:#fff;font-weight:700;font-size:12px;letter-spacing:3px;margin-bottom:10px">5 AI TOOLS WE ADD</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -56,15 +51,13 @@ function luxuryEmail(lead:any, previewUrl:string, baseUrl:string){
           <div style="flex:1;min-width:120px;background:#111;border:1px solid #222;border-radius:10px;padding:10px"><div style="color:#c5a059;font-size:12px;font-weight:700">AI Call Track</div><div style="color:#888;font-size:11px">Records every lead</div></div>
         </div>
       </div>
-
       <div style="padding:10px 24px 24px 24px;text-align:center">
         <a href="${previewUrl}" style="display:inline-block;background:linear-gradient(90deg,#c5a059,#8a6d3b);color:#000;font-weight:900;padding:14px 28px;border-radius:30px;text-decoration:none;letter-spacing:2px;font-size:13px">SEE YOUR NEW AI SITE →</a>
         <div style="margin-top:14px">
-          <a href="https://wa.me/17865880578" style="display:inline-block;background:#25D366;color:#fff;font-weight:700;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:12px"><span style="font-size:14px">💬</span> WhatsApp +1 (786) 588-0578</a>
+          <a href="https://wa.me/17865880578" style="display:inline-block;background:#25D366;color:#fff;font-weight:700;padding:10px 20px;border-radius:20px;text-decoration:none;font-size:12px">💬 WhatsApp +1 (786) 588-0578</a>
           <div style="margin-top:8px;color:#666;font-size:11px">Preview: ${previewUrl}<br/>Live on ${baseUrl}/p/${cat}?b=${encodeURIComponent(lead.business)}&domain=${lead.domain}&city=${lead.city}</div>
         </div>
       </div>
-
     </div>
   </div>`;
 }
@@ -75,7 +68,6 @@ export async function GET(req: NextRequest){
   const live = searchParams.get('live');
   const baseUrl = getBaseUrl(req);
 
-  // TRY KV, FALLBACK MEM
   let kv:any = null;
   try{ const mod = await import('@vercel/kv').catch(()=>null); kv = mod?.kv || null; }catch{}
 
@@ -88,13 +80,11 @@ export async function GET(req: NextRequest){
     if(kv){ try{ await kv.set('venus_leads', l); }catch{} }
   }
 
-  // STATUS
   if(action==='status'){
     const leads = await getLeads();
     return NextResponse.json({status:'VENUS_REAL_FULL_LUXURY', scraping:'OLD 2005-2020 SITES THAT DID NOT UPGRADE', total: leads.length, leads: leads.slice(0,5), endpoints:{mine:`${baseUrl}/api/real?action=mine5`, status:`${baseUrl}/api/real?action=status`, blastTest:`${baseUrl}/api/real?action=blast&live=0`, blastLive:`${baseUrl}/api/real?action=blast&live=1`}});
   }
 
-  // MINE5 - OLD 2005-2020 SITES
   if(action==='mine5' || action==='mine'){
     const serpKey = process.env.SERP_API_KEY || process.env.SERPAPI_API_KEY || '';
     const categories = [
@@ -130,7 +120,6 @@ export async function GET(req: NextRequest){
           }catch{}
         }
       }
-      // FALLBACK if SERP fails - still OLD sites
       if(mined.length===0){
         mined = [
           {business:'Houston Elite Roofing', domain:'eliteroofinghouston.com', city:'Houston', category:'roofers', email:'info@eliteroofinghouston.com', year:2008},
@@ -141,48 +130,48 @@ export async function GET(req: NextRequest){
         ];
       }
       await setLeads(mined);
-      return NextResponse.json({autonomous:true, mined:mined.length, leads:mined, note:'OLD 2005-2020 sites that did not upgrade - filtered no reddit/yelp'});
+      return NextResponse.json({autonomous:true, mined:mined.length, leads:mined, note:'OLD 2005-2020 sites that did not upgrade'});
     }catch(e:any){
       return NextResponse.json({error:e.message, mined:0});
     }
   }
 
-  // BLAST
   if(action==='blast'){
     const leads = await getLeads();
     let list = leads;
     if(list.length===0){
-      // auto mine fallback
-      const fb = [
-        {business:'Houston Elite Roofing', domain:'eliteroofinghouston.com', city:'Houston', category:'roofers', email:'info@eliteroofinghouston.com', year:2008},
-      ];
-      list = fb;
-      await setLeads(fb);
+      list = [{business:'Houston Elite Roofing', domain:'eliteroofinghouston.com', city:'Houston', category:'roofers', email:'info@eliteroofinghouston.com', year:2008}];
+      await setLeads(list);
     }
     const targetEmail = live==='1'? null : 've9us1@gmail.com';
-    const resendKey = process.env.RESEND_API_KEY || '';
+    const brevoKey = process.env.BREVO_API_KEY || '';
     let sent = 0;
     let errors:any[] = [];
+    if(!brevoKey){
+      return NextResponse.json({mode:'ERROR', message:'No BREVO_API_KEY in Vercel Env - add your xkeysib-... key', sent:0});
+    }
     for(const lead of list.slice(0,5)){
       const previewUrl = `${baseUrl}/p/${lead.category}?b=${encodeURIComponent(lead.business)}&domain=${lead.domain}&city=${lead.city}&year=${lead.year}`;
       const html = luxuryEmail(lead, previewUrl, baseUrl);
       const to = targetEmail || lead.email;
-      if(!resendKey){
-        errors.push('No RESEND_API_KEY set in Vercel Env');
-        break;
-      }
       try{
-        const r = await fetch('https://api.resend.com/emails',{
+        const r = await fetch('https://api.brevo.com/v3/smtp/email',{
           method:'POST',
-          headers:{'Authorization':`Bearer ${resendKey}`,'Content-Type':'application/json'},
-          body: JSON.stringify({from:'Venus HQ7 <ron@venushq7.com>', to:[to], subject:`${lead.business} — Your ${lead.domain} from ${lead.year} is losing customers (old 2005-2020 site)`, html, reply_to:'ron@venushq7.com'})
+          headers:{'api-key': brevoKey,'Content-Type':'application/json'},
+          body: JSON.stringify({
+            sender: { email: 'contact@venushq7.com', name: 'Venus HQ7' },
+            to: [{ email: to }],
+            subject: `${lead.business} — Your ${lead.domain} from ${lead.year} is losing customers (old 2005-2020 site)`,
+            htmlContent: html,
+            replyTo: { email: 'ron@venushq7.com' }
+          })
         });
         const j = await r.json();
         if(r.ok) sent++; else errors.push(j);
       }catch(err:any){ errors.push(err.message); }
-      if(targetEmail) break; // test mode only 1 email
+      if(targetEmail) break;
     }
-    return NextResponse.json({mode: live==='1'? 'LIVE TO OLD CUSTOMERS' : 'TEST to ve9us1@gmail.com', sent, queue:list.length, whatsapp:'+1 (786) 588-0578', errors});
+    return NextResponse.json({mode: live==='1'? 'LIVE TO OLD CUSTOMERS - BREVO VERIFIED' : 'TEST to ve9us1@gmail.com - BREVO', sent, queue:list.length, whatsapp:'+1 (786) 588-0578', errors});
   }
 
   return NextResponse.json({error:'unknown action', actions:['mine5','status','blast']});

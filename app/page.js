@@ -1,66 +1,111 @@
-export default function Home(){
+"use client";
+import { useState } from "react";
+
+export default function Page() {
   return (
-    <div style={{background:'#fff',color:'#111',minHeight:'100vh',fontFamily:'system-ui',overflowX:'hidden'}}>
-      <style>{`
-        *{box-sizing:border-box}
-        @media(max-width:600px){
-          h1{font-size:38px !important; letter-spacing:-1.5px !important}
-          .grid{grid-template-columns:1fr !important}
-          .hero{padding:28px 16px !important}
-          .card{padding:16px !important}
-        }
-      `}</style>
-
-      <div style={{height:56,borderBottom:'1px solid #eee',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',position:'sticky',top:0,background:'#fff',zIndex:10}}>
-        <div style={{display:'flex',gap:8,alignItems:'center'}}><div style={{background:'#111',color:'#fff',width:26,height:26,borderRadius:8,display:'grid',placeItems:'center',fontWeight:800,fontSize:12}}>V</div><b style={{fontSize:13}}>VENUS HQ7GEN</b></div>
-        <div style={{fontSize:10,background:'#111',color:'#fff',padding:'5px 10px',borderRadius:20}}>LIVE 0.8s</div>
-      </div>
-
-      <div className="hero" style={{maxWidth:1100,margin:'0 auto',padding:'48px 20px'}}>
-        <div style={{fontSize:10,letterSpacing:1,border:'1px solid #e5e5e5',display:'inline-block',padding:'6px 12px',borderRadius:20,color:'#666'}}>HOUSTON • 2005-2020 • FORGOTTEN DOMAINS</div>
-        <h1 style={{fontSize:'clamp(38px,7vw,68px)',fontWeight:900,lineHeight:0.9,marginTop:20,letterSpacing:-2.5}}>WE FIND<br/>OLD WEBSITES.<br/><span style={{background:'#FFE55C',padding:'0 8px'}}>YOU GET NEW</span><br/>CUSTOMERS.</h1>
-        <p style={{color:'#666',maxWidth:480,marginTop:14,fontSize:16,lineHeight:1.5}}>Scraper for 2005-2020. Houston roofers, plumbers. We rebuild for 2027 booking-first.</p>
-
-        <div className="grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:12,marginTop:28}}>
-          <div className="card" style={{border:'1px solid #e5e5e5',borderRadius:16,padding:18}}>
-            <div style={{fontSize:10,color:'#999'}}>01 — BOOKING CHAT</div>
-            <div style={{fontWeight:700,marginTop:6,fontSize:15}}>Replaces contact form</div>
-            <div style={{fontSize:13,color:'#666',marginTop:4}}>8% → 34% conversion • 1 line script</div>
-            <div style={{background:'#f6f6f7',borderRadius:12,padding:10,marginTop:10,fontSize:13,lineHeight:1.4}}>Hi! What roof type?<br/>Shingle — leaking near chimney<br/><span style={{color:'#888'}}>Got it. Tomorrow 9am?</span><br/>Yes. 1420 Westheimer<br/><div style={{background:'#111',color:'#a3e635',padding:'7px 10px',borderRadius:8,marginTop:8,fontSize:12}}>Booked. Crew at 9am $250</div></div>
-          </div>
-
-          <div className="card" style={{border:'1px solid #e5e5e5',borderRadius:16,padding:18}}>
-            <div style={{fontSize:10,color:'#999'}}>02 — QUOTE ESTIMATOR</div>
-            <div style={{fontWeight:700,marginTop:6,fontSize:15}}>Photo → instant price</div>
-            <div style={{border:'1px dashed #ccc',borderRadius:12,padding:16,textAlign:'center',marginTop:10}}><div style={{fontSize:12}}>DRAG PHOTO HERE</div><div style={{fontSize:11,color:'#888',marginTop:6}}>Analyzing shingle wear...</div><b style={{display:'block',marginTop:6}}>$4,200 — $5,800</b></div>
-          </div>
-
-          <div className="card" style={{border:'1px solid #e5e5e5',borderRadius:16,padding:18}}>
-            <div style={{fontSize:10,color:'#999'}}>03 — MISSED-CALL TEXT BACK</div>
-            <div style={{fontWeight:700,marginTop:6,fontSize:15}}>3s reply • Saves $10k/mo</div>
-            <div style={{background:'#f6f6f7',borderRadius:12,padding:10,marginTop:10,fontSize:13}}>MISSED CALL 2:34pm<br/>→ SMS in 3s<br/>On a roof — call back in 5? Reply YES<br/><div style={{marginTop:8,display:'flex',gap:6}}><span style={{background:'#FFE55C',padding:'4px 8px',borderRadius:20,fontSize:12}}>Customer: YES</span><span style={{background:'#111',color:'#fff',padding:'4px 8px',borderRadius:20,fontSize:12}}>Booked</span></div></div>
-          </div>
-
-          <div className="card" style={{border:'1px solid #e5e5e5',borderRadius:16,padding:18}}>
-            <div style={{fontSize:10,color:'#999'}}>04 — REVIEW ENGINE</div>
-            <div style={{fontWeight:700,marginTop:6,fontSize:15}}>4.2 → 4.9 stars in 30 days</div>
-            <div style={{fontSize:13,marginTop:10,lineHeight:1.4}}>Job #2841 complete<br/>→ "Loved your new roof?" SMS<br/>★★★★★ "Fast, clean, fixed leak in 2hrs"<br/><span style={{color:'#666',fontSize:12}}>AI Reply: Thanks! Houston's leak specialists #HoustonRoofing</span></div>
-          </div>
-
-          <div className="card" style={{border:'1px solid #e5e5e5',borderRadius:16,padding:18}}>
-            <div style={{fontSize:10,color:'#999'}}>05 — UPSELL & REBOOK</div>
-            <div style={{fontWeight:700,marginTop:6,fontSize:15}}>22% rebook rate</div>
-            <div style={{background:'#f6f6f7',borderRadius:12,padding:10,marginTop:10,fontSize:13}}>Job done 31 days ago<br/>→ AI: "Hey Mike, gutter due? 15% off"<br/>Mike: GUTTER<div style={{background:'#FFE55C',padding:'8px',borderRadius:8,marginTop:8,fontWeight:700}}>Booked Thu 10am — $189</div></div>
-          </div>
+    <main className="min-h-screen bg-white text-black font-sans antialiased">
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap');`}</style>
+      
+      {/* HEADER */}
+      <header className="border-b border-black px-6 py-4 flex justify-between items-center sticky top-0 bg-white z-50">
+        <div className="flex items-center gap-3 font-mono text-xs">
+          <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></span>
+          VENUS HQ7GEN — 2027 SYSTEM LIVE
         </div>
+        <div className="font-mono text-[10px] opacity-50">HOUSTON DEMO 0.8s LOAD</div>
+      </header>
 
-        <div style={{marginTop:36,borderTop:'1px solid #eee',paddingTop:20}}>
-          <h2 style={{fontSize:22,fontWeight:800}}>READY TO SEE IT LIVE?</h2>
-          <p style={{color:'#666',fontSize:14,marginTop:6}}>Houston demo loads 0.8s. Before 2008 tables, after 2027 booking-first.</p>
-          <div style={{display:'inline-block',marginTop:12,background:'#111',color:'#fff',padding:'12px 20px',borderRadius:30,fontSize:14,fontWeight:600}}>View Live Demo →</div>
-          <div style={{marginTop:20,fontSize:11,color:'#999'}}>© 2027 VENUS HQ7 — Built for Houston</div>
+      {/* HERO */}
+      <section className="px-6 md:px-12 py-20 md:py-32 border-b border-black">
+        <h1 className="text-[12vw] md:text-[8vw] leading-[0.85] font-black tracking-tighter uppercase">
+          WE FIND<br/>OLD<br/>WEBSITES.<br/>
+          <span className="text-transparent" style={{WebkitTextStroke: "1px black"}}>YOU GET NEW</span><br/>
+          CUSTOMERS.
+        </h1>
+        <p className="mt-8 max-w-xl font-mono text-sm leading-relaxed">
+          Scraper for 2005-2020 businesses. Houston roofers & plumbers.<br/>
+          We rebuild them for 2027. You keep the revenue.<br/>
+          <span className="bg-black text-white px-2">0.8s load, booking-first, brutalist.</span>
+        </p>
+        <div className="mt-10 flex gap-3 font-mono text-xs">
+          <a href="#demo" className="bg-black text-white px-6 py-3 uppercase">View Live Demo →</a>
+          <a href="#stack" className="border border-black px-6 py-3 uppercase">See 2030 Stack</a>
         </div>
-      </div>
-    </div>
-  )
+        <div className="mt-6 font-mono text-[11px] opacity-60">Before: 2008 HTML tables — After: 2027 booking-first</div>
+      </section>
+
+      {/* PROCESS */}
+      <section className="px-6 md:px-12 py-16 border-b border-black">
+        <div className="font-mono text-xs mb-8">[02 — PROCESS]</div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            {n:"01", t:"SCAN", d:"Find forgotten sites from 2005-2020. Domains with history, zero design."},
+            {n:"02", t:"BUILD", d:"AI rebuilds for 2027. Brutalist. Fast. Booking-first. 1.1s load."},
+            {n:"03", t:"BOOK", d:"Calls, bookings, revenue. Old traffic, new system."},
+          ].map(c=>(
+            <div key={c.n} className="border border-black p-8">
+              <div className="font-mono text-xs opacity-40">{c.n}</div>
+              <div className="text-3xl font-black mt-2">{c.t}</div>
+              <div className="font-mono text-xs mt-4 leading-relaxed opacity-70">{c.d}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 2030 STACK */}
+      <section id="stack" className="px-6 md:px-12 py-16 bg-black text-white border-b border-black">
+        <h2 className="text-4xl md:text-6xl font-black uppercase leading-none">EVERYTHING TO<br/>COMPETE IN 2030</h2>
+        <p className="font-mono text-xs mt-4 opacity-60">All built-in, no extra tools.</p>
+        <div className="grid md:grid-cols-4 gap-px bg-white/20 mt-10 border border-white/20">
+          {[
+            ["01","VENUS OS DASHBOARD","Live: calls, jobs, revenue, reviews, ad ROI. See extra $12k/week"],
+            ["02","AI VOICE RECEPTIONIST","Answers 24/7, books jobs. Old 2 bookings → AI 10-15"],
+            ["03","AI ADS + 7x FOLLOW-UP","$500 ads → 50 clicks → AI follows 7x → $15k rev"],
+            ["04","AGENT-SCRAPER","Finds old 2005-2020 sites"],
+            ["05","AGENT-BUILDER","Rebuilds for 2027"],
+            ["06","AGENT-TRACKER","Tracks leads, calls, bookings"],
+            ["07","BLAST5 + SEND-PREVIEW","Auto email + SMS blast to 5 leads/day"],
+            ["08","VENUS FACTORY","Autonomous loop. You only click WhatsApp to make live."],
+          ].map(([n,t,d])=>(
+            <div key={n} className="bg-black p-6">
+              <div className="font-mono text-[10px] opacity-40">{n}</div>
+              <div className="font-black text-sm mt-2">{t}</div>
+              <div className="font-mono text-[11px] mt-3 opacity-60 leading-relaxed">{d}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5 TOOLS */}
+      <section className="px-6 md:px-12 py-16 border-b border-black">
+        <div className="font-mono text-xs mb-4">[04 — INSIDE YOUR SITE]</div>
+        <h2 className="text-4xl md:text-5xl font-black uppercase">5 AI TOOLS ALREADY INSIDE.<br/>Not add-ons. Built-in.</h2>
+        <div className="mt-10 grid gap-4">
+          {[
+            ["01","AI BOOKING CHAT","Replaces contact form. 8% → 34% conversion.","venus.ai/tool-01.js"],
+            ["02","AI QUOTE ESTIMATOR","Instant price from photos. Upload → $4.2k-$5.8k","venus.ai/tool-02.js"],
+            ["03","AI MISSED-CALL TEXT BACK","Missed call? AI texts in 3s. Saves $10k/mo","venus.ai/tool-03.js"],
+            ["04","AI REVIEW ENGINE","Auto asks for review, 4.2 → 4.9 stars in 30 days","venus.ai/tool-04.js"],
+            ["05","AI UPSELL & REBOOK","22% rebook rate after job","venus.ai/tool-05.js"],
+          ].map(([n,t,d,s])=>(
+            <div key={n} className="border border-black flex flex-col md:flex-row md:items-center justify-between p-6 gap-4">
+              <div className="flex gap-6 items-center">
+                <span className="font-mono text-xs">{n} <span className="bg-green-500 text-black px-2 ml-2">LIVE</span></span>
+                <div>
+                  <div className="font-black">{t}</div>
+                  <div className="font-mono text-xs opacity-60 mt-1">{d}</div>
+                </div>
+              </div>
+              <code className="font-mono text-[10px] bg-black text-white px-3 py-1">{s}</code>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer className="px-6 md:px-12 py-8 font-mono text-[10px] flex justify-between opacity-50">
+        <span>© 2027 VENUS HQ7 — Built for Houston</span>
+        <span>v7 code → v8 live prod</span>
+      </footer>
+    </main>
+  );
 }
